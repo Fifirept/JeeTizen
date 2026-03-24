@@ -1,0 +1,16 @@
+{
+    "id"          : "JeeTizen",
+    "name"        : "JeeTizen",
+    "description" : "Contrôle des téléviseurs Samsung Tizen (2016+) via WebSocket",
+    "licence"     : "AGPL",
+    "author"      : "",
+    "require"     : "4.2.0",
+    "requireOsVersion" : "10",
+    "category"    : "multimedia",
+    "changelog"   : "",
+    "documentation": "",
+    "language"    : "",
+    "compatibility": ["miniplus","smart","rpi","docker","diy","v4"],
+    "hasDependency": false,
+    "hasOwnDeamon": false
+}
