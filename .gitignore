@@ -1,0 +1,11 @@
+# Ignore vendor directories
+/vendor/
+
+# Ignore IDE files
+*.idea/
+*.vscode/
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.log
