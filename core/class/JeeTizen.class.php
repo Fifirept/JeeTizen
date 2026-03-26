@@ -239,7 +239,9 @@ class JeeTizen extends eqLogic {
 		if (isset($cmds['state']) && is_object($cmds['state'])) {
 			$stateValue = $cmds['state']->execCmd();
 		}
-		$replace['#state_color#'] = $stateValue ? '#4caf50' : '#666';
+		$replace['#state_r#'] = $stateValue ? '76' : '102';
+		$replace['#state_g#'] = $stateValue ? '175' : '102';
+		$replace['#state_b#'] = $stateValue ? '80' : '102';
 		$replace['#state_title#'] = $stateValue ? 'Allumée' : 'Éteinte';
 
 		// Générer les boutons
