@@ -27,16 +27,16 @@ class JeeTizen extends eqLogic {
 	/*     * *************************Attributs****************************** */
 
 	const DEFAULT_COMMANDS = [
-		// [logicalId, nom, type, subType, isVisible, config]
-		['on_off',   'Marche/Arrêt', 'action', 'other',   1, []],
-		['off',      'Extinction',   'action', 'other',   1, []],
-		['mute',     'Mute',         'action', 'other',   1, []],
-		['vol_up',   'Volume +',     'action', 'other',   1, []],
-		['vol_down', 'Volume -',     'action', 'other',   1, []],
-		['ch_up',    'Chaîne +',     'action', 'other',   1, []],
-		['ch_down',  'Chaîne -',     'action', 'other',   1, []],
-		['source',   'Source',       'action', 'other',   1, []],
-		['state',    'Etat',         'info',   'binary',  1, []],
+		// [logicalId, nom, type, subType, isVisible, config, genericType, icon]
+		['on_off',   'Marche/Arrêt', 'action', 'other',   1, [], 'ENERGY_ON', 'fas fa-power-off'],
+		['off',      'Extinction',   'action', 'other',   0, [], 'ENERGY_OFF', 'fas fa-stop'],
+		['mute',     'Mute',         'action', 'other',   1, [], 'VOLUME_MUTE', 'fas fa-volume-mute'],
+		['vol_up',   'Volume +',     'action', 'other',   1, [], 'VOLUME_UP', 'fas fa-volume-up'],
+		['vol_down', 'Volume -',     'action', 'other',   1, [], 'VOLUME_DOWN', 'fas fa-volume-down'],
+		['ch_up',    'Chaîne +',     'action', 'other',   1, [], 'CHANNEL_UP', 'fas fa-chevron-up'],
+		['ch_down',  'Chaîne -',     'action', 'other',   1, [], 'CHANNEL_DOWN', 'fas fa-chevron-down'],
+		['source',   'Source',       'action', 'other',   1, [], '', 'fas fa-external-link-alt'],
+		['state',    'Etat',         'info',   'binary',  1, [], 'ENERGY_STATE', 'fas fa-tv'],
 	];
 
 	/*     * ***********************Methode static*************************** */
@@ -148,10 +148,19 @@ class JeeTizen extends eqLogic {
 	}
 
 	public function postSave() {
-		foreach (self::DEFAULT_COMMANDS as [$logicalId, $name, $type, $subType, $isVisible, $config]) {
+		foreach (self::DEFAULT_COMMANDS as $cmdDef) {
+			$logicalId  = $cmdDef[0];
+			$name       = $cmdDef[1];
+			$type       = $cmdDef[2];
+			$subType    = $cmdDef[3];
+			$isVisible  = $cmdDef[4];
+			$config     = $cmdDef[5];
+			$genericType = isset($cmdDef[6]) ? $cmdDef[6] : '';
+			$icon       = isset($cmdDef[7]) ? $cmdDef[7] : '';
+
 			// Chercher par logicalId d'abord
 			$cmd = $this->getCmd($type, $logicalId);
-			// Chercher aussi par nom (migration depuis ancienne version)
+			// Chercher aussi sans filtre type (migration)
 			if (!is_object($cmd)) {
 				$cmd = $this->getCmd(null, $logicalId);
 			}
@@ -159,7 +168,6 @@ class JeeTizen extends eqLogic {
 				// Vérifier qu'une commande avec ce nom n'existe pas déjà
 				foreach ($this->getCmd() as $existingCmd) {
 					if ($existingCmd->getName() == $name) {
-						// Mettre à jour le logicalId de la commande existante
 						$existingCmd->setLogicalId($logicalId);
 						$existingCmd->setType($type);
 						$existingCmd->setSubType($subType);
@@ -178,6 +186,12 @@ class JeeTizen extends eqLogic {
 					$cmd->setType($type);
 					$cmd->setSubType($subType);
 					$cmd->setIsVisible($isVisible);
+					if (!empty($genericType)) {
+						$cmd->setGeneric_type($genericType);
+					}
+					if (!empty($icon)) {
+						$cmd->setDisplay('icon', '<i class="' . $icon . '"></i>');
+					}
 					foreach ($config as $k => $v) {
 						$cmd->setConfiguration($k, $v);
 					}
@@ -207,76 +221,6 @@ class JeeTizen extends eqLogic {
 			include_file('core', 'Telecommande/JeeTizen.CommunicationStatus', 'class', 'JeeTizen');
 		}
 		return TvParametres::getInstanceFromConfig($this);
-	}
-
-	/**
-	 * Widget dashboard personnalisé - mini télécommande Samsung
-	 */
-	public function toHtml($_version = 'dashboard') {
-		$_version = jeedom::versionAlias($_version);
-		if (!$this->hasRight('r')) {
-			return '';
-		}
-
-		$replace = $this->preToHtml($_version);
-		if (!is_array($replace)) {
-			return $replace;
-		}
-
-		// Récupérer les commandes par logicalId
-		$cmds = array();
-		foreach ($this->getCmd() as $cmd) {
-			$cmds[$cmd->getLogicalId()] = $cmd;
-		}
-
-		// État de la TV
-		$stateValue = 0;
-		if (isset($cmds['state']) && is_object($cmds['state'])) {
-			$stateValue = $cmds['state']->execCmd();
-		}
-		$stateColor = $stateValue ? '#0f0' : '#666';
-		$stateTitle = $stateValue ? 'Allumée' : 'Éteinte';
-
-		// Helper pour générer un bouton
-		$btn = function($logId, $icon, $label, $extraClass = '') use ($cmds) {
-			if (!isset($cmds[$logId])) return '<div class="jt-b jt-empty"></div>';
-			$id = $cmds[$logId]->getId();
-			return '<div class="jt-b ' . $extraClass . '" onclick="jeedom.cmd.execute({id:\'' . $id . '\'})"><span class="jt-i">' . $icon . '</span><span class="jt-l">' . $label . '</span></div>';
-		};
-
-		$eqId = $this->getId();
-
-		$html = $replace['#begin#'];
-		$html .= '<style>
-.jt-w' . $eqId . '{padding:4px;text-align:center}
-.jt-w' . $eqId . ' .jt-state{display:inline-block;width:6px;height:6px;border-radius:50%;margin:0 4px 2px 0;vertical-align:middle}
-.jt-w' . $eqId . ' .jt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:4px}
-.jt-w' . $eqId . ' .jt-b{background:rgba(var(--defaultColorActionBg,50,50,50),0.9);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:6px 2px;cursor:pointer;text-align:center;transition:background .15s;user-select:none}
-.jt-w' . $eqId . ' .jt-b:hover{background:rgba(var(--defaultColorActionBg,80,80,80),1)}
-.jt-w' . $eqId . ' .jt-b:active{transform:scale(.95)}
-.jt-w' . $eqId . ' .jt-pwr{color:#f44}
-.jt-w' . $eqId . ' .jt-src{grid-column:span 3;font-size:10px;letter-spacing:1px;color:var(--link-color,#5bc0de)}
-.jt-w' . $eqId . ' .jt-i{font-size:16px;display:block;line-height:1}
-.jt-w' . $eqId . ' .jt-l{font-size:8px;opacity:.5;display:block;margin-top:1px}
-.jt-w' . $eqId . ' .jt-empty{visibility:hidden}
-</style>';
-		$html .= '<div class="jt-w' . $eqId . '">';
-		$html .= '<span class="jt-state" style="background:' . $stateColor . '" title="' . $stateTitle . '"></span>';
-		$html .= '<div class="jt-grid">';
-		$html .= $btn('on_off', '⏻', 'ON/OFF', 'jt-pwr');
-		$html .= $btn('mute', '🔇', 'MUTE');
-		$html .= $btn('off', '⏼', 'OFF');
-		$html .= $btn('vol_up', '🔊', 'VOL+');
-		$html .= $btn('ch_up', '▲', 'CH+');
-		$html .= $btn('vol_down', '🔉', 'VOL-');
-		$html .= '<div class="jt-b jt-empty"></div>';
-		$html .= $btn('ch_down', '▼', 'CH-');
-		$html .= '<div class="jt-b jt-empty"></div>';
-		$html .= $btn('source', '⎆ SRC', '', 'jt-src');
-		$html .= '</div></div>';
-		$html .= $replace['#end#'];
-
-		return $html;
 	}
 
 	/*     * **********************Getteur Setteur*************************** */
