@@ -285,5 +285,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
 	</div><!-- /.eqLogic -->
 </div><!-- /.row row-overflow -->
 
+<?php include_file('desktop', 'JeeTizen', 'css', 'JeeTizen'); ?>
 <?php include_file('desktop', 'JeeTizen', 'js', 'JeeTizen'); ?>
 <?php include_file('core', 'plugin.template', 'js'); ?>

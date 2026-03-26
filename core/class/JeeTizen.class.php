@@ -210,6 +210,36 @@ class JeeTizen extends eqLogic {
 	}
 
 	/**
+	 * Widget avec style custom - appelle le rendu natif + injecte le CSS
+	 */
+	public function toHtml($_version = 'dashboard') {
+		$html = parent::toHtml($_version);
+		if ($html == '') {
+			return '';
+		}
+
+		// Injecter le CSS une seule fois (vérifie si déjà présent)
+		$cssId = 'jeetizen-widget-css';
+		$css = '<style id="' . $cssId . '">'
+			. '[data-eqtype="JeeTizen"] .cmd-widget{display:inline-block;vertical-align:top;margin:2px}'
+			. '[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .btn-sm{'
+			. 'border-radius:8px;min-width:44px;min-height:38px;padding:6px 8px;font-size:14px;'
+			. 'transition:opacity .15s,transform .1s}'
+			. '[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .btn-sm:active{transform:scale(.93)}'
+			. '[data-eqtype="JeeTizen"] .cmd-widget .fa-power-off{color:rgb(229,57,53)}'
+			. '[data-eqtype="JeeTizen"] .cmd-widget[data-type="info"]{font-size:12px}'
+			. '</style>';
+
+		$script = '<script>'
+			. 'if(!document.getElementById("' . $cssId . '")){'
+			. 'document.head.insertAdjacentHTML("beforeend",\'' . str_replace("'", "\\'", $css) . '\');'
+			. '}'
+			. '</script>';
+
+		return $html . $script;
+	}
+
+	/**
 	 * Récupération des paramètres de configuration TV
 	 * Instancie TvParametres pour le bon connecteur Samsung
 	 */

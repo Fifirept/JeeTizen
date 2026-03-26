@@ -1,0 +1,32 @@
+/* JeeTizen - Style widget dashboard/design */
+
+/* Conteneur des commandes : grille 3 colonnes */
+[data-eqtype="JeeTizen"] .cmd-widget {
+	display: inline-block;
+	vertical-align: top;
+	margin: 2px;
+}
+
+/* Boutons d'action : style compact arrondi */
+[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .btn-sm {
+	border-radius: 8px;
+	min-width: 44px;
+	min-height: 38px;
+	padding: 6px 8px;
+	font-size: 14px;
+	transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .btn-sm:active {
+	transform: scale(0.93);
+}
+
+/* Icône Power en rouge */
+[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .fa-power-off {
+	color: rgb(229, 57, 53);
+}
+
+/* Info état : LED compacte */
+[data-eqtype="JeeTizen"] .cmd-widget[data-type="info"] {
+	font-size: 12px;
+}
