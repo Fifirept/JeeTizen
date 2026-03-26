@@ -222,72 +222,121 @@ class JeeTizen extends eqLogic {
 		$W = '.eqLogic-widget[data-eqtype="JeeTizen"]';
 
 		$css = '<style>'
-			/* Fond clair neumorphique */
-			. $W . '{background:rgb(235,238,245) !important;border:none !important;box-shadow:8px 8px 16px rgba(0,0,0,0.08),-8px -8px 16px rgba(255,255,255,0.9) !important}'
+			/* Fond sombre */
+			. $W . '{background:rgb(30,32,44) !important;border:none !important}'
 			/* Nom widget */
-			. $W . ' .widget-name a,' . $W . ' .widget-name span{color:rgb(60,60,80) !important;font-weight:600 !important}'
-			. $W . ' .widget-name .object_name{color:rgb(140,140,160) !important;font-size:0.8em;font-weight:400 !important}'
-			/* Conteneur */
-			. $W . ' .cmds{padding:6px 4px}'
-			/* Grille boutons */
-			. $W . ' .action-buttons{display:flex !important;flex-wrap:wrap;justify-content:center;gap:8px;padding:4px 0}'
-			/* Commandes */
-			. $W . ' .cmd.cmd-widget{margin:0 !important}'
-			/* Boutons neumorphiques ronds */
-			. $W . ' .cmd.cmd-widget .execute{'
-			. 'background:rgb(235,238,245) !important;'
-			. 'border:none !important;'
-			. 'border-radius:14px !important;'
-			. 'box-shadow:4px 4px 8px rgba(0,0,0,0.1),-4px -4px 8px rgba(255,255,255,0.95) !important;'
-			. 'color:rgb(88,80,160) !important;'
-			. 'width:48px !important;height:48px !important;'
-			. 'padding:0 !important;font-size:18px !important;'
-			. 'display:inline-flex !important;align-items:center !important;justify-content:center !important;'
-			. 'transition:all .15s !important;text-shadow:none !important}'
-			/* Hover */
-			. $W . ' .cmd.cmd-widget .execute:hover{'
-			. 'box-shadow:6px 6px 12px rgba(0,0,0,0.12),-6px -6px 12px rgba(255,255,255,1) !important;'
-			. 'color:rgb(70,60,140) !important}'
-			/* Clic enfoncé */
-			. $W . ' .cmd.cmd-widget .execute:active{'
-			. 'box-shadow:inset 3px 3px 6px rgba(0,0,0,0.1),inset -3px -3px 6px rgba(255,255,255,0.7) !important;'
-			. 'color:rgb(88,80,160) !important}'
-			/* Power en rouge-rose */
-			. $W . ' .cmd.cmd-widget .execute .fa-power-off{color:rgb(180,60,80) !important}'
-			/* Source style pill */
-			. $W . ' .cmd.cmd-widget .jt-source{'
-			. 'border-radius:20px !important;width:auto !important;padding:0 14px !important;gap:6px}'
-			/* Info état */
-			. $W . ' .cmd.cmd-widget[data-type="info"]{display:block !important;margin:6px auto !important}'
-			. $W . ' .cmd.cmd-widget[data-type="info"] .cmdName{color:rgb(140,140,160) !important;font-size:10px}'
-			. $W . ' .cmd.cmd-widget[data-type="info"] .iconCmd .icon_green{color:rgb(88,80,160) !important}'
-			. $W . ' .cmd.cmd-widget[data-type="info"] .iconCmd .icon_red{color:rgb(180,60,80) !important}'
+			. $W . ' .widget-name a,' . $W . ' .widget-name span{color:rgb(200,200,210) !important;font-weight:600 !important}'
+			. $W . ' .widget-name .object_name{color:rgb(110,110,130) !important;font-size:0.8em;font-weight:400 !important}'
+			/* Cacher les boutons originaux - on les reconstruit */
+			. $W . ' .cmds>.action-buttons,' . $W . ' .cmds>.cmd.cmd-widget[data-type="info"]{display:none !important}'
+			/* Container custom */
+			. $W . ' .jt-remote{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 4px}'
+			/* Rangée */
+			. $W . ' .jt-row{display:flex;align-items:center;justify-content:center;gap:10px}'
+			/* Bouton rond simple */
+			. $W . ' .jt-btn{'
+			. 'background:rgb(42,44,58);'
+			. 'border:none;border-radius:50%;'
+			. 'box-shadow:3px 3px 6px rgba(0,0,0,0.4),-2px -2px 5px rgba(60,62,80,0.5);'
+			. 'color:rgb(160,165,200);width:42px;height:42px;'
+			. 'display:inline-flex;align-items:center;justify-content:center;'
+			. 'font-size:16px;cursor:pointer;transition:all .12s;user-select:none}'
+			. $W . ' .jt-btn:hover{color:rgb(200,205,240);box-shadow:4px 4px 8px rgba(0,0,0,0.5),-3px -3px 6px rgba(60,62,80,0.6)}'
+			. $W . ' .jt-btn:active{box-shadow:inset 2px 2px 4px rgba(0,0,0,0.4),inset -2px -2px 4px rgba(60,62,80,0.3)}'
+			/* Power */
+			. $W . ' .jt-btn-pwr{color:rgb(200,70,80)}'
+			. $W . ' .jt-btn-pwr:hover{color:rgb(240,90,100)}'
+			/* Bloc vertical (VOL, CH) */
+			. $W . ' .jt-vblock{'
+			. 'background:rgb(42,44,58);'
+			. 'border-radius:22px;'
+			. 'box-shadow:3px 3px 6px rgba(0,0,0,0.4),-2px -2px 5px rgba(60,62,80,0.5);'
+			. 'display:flex;flex-direction:column;align-items:center;'
+			. 'padding:4px 6px;gap:2px;min-width:48px}'
+			/* Boutons dans un bloc vertical */
+			. $W . ' .jt-vblock .jt-vbtn{'
+			. 'background:none;border:none;color:rgb(160,165,200);'
+			. 'width:40px;height:32px;display:flex;align-items:center;justify-content:center;'
+			. 'font-size:16px;cursor:pointer;transition:color .12s;border-radius:10px}'
+			. $W . ' .jt-vblock .jt-vbtn:hover{color:rgb(220,220,255);background:rgba(255,255,255,0.04)}'
+			. $W . ' .jt-vblock .jt-vbtn:active{background:rgba(0,0,0,0.15)}'
+			/* Label dans bloc */
+			. $W . ' .jt-vblock .jt-vlbl{color:rgb(120,125,160);font-size:9px;font-weight:600;letter-spacing:0.5px;user-select:none}'
+			/* Source pill */
+			. $W . ' .jt-pill{'
+			. 'background:rgb(42,44,58);'
+			. 'border-radius:18px;'
+			. 'box-shadow:3px 3px 6px rgba(0,0,0,0.4),-2px -2px 5px rgba(60,62,80,0.5);'
+			. 'display:inline-flex;align-items:center;gap:6px;'
+			. 'padding:8px 16px;color:rgb(160,165,200);font-size:11px;font-weight:600;letter-spacing:0.5px;'
+			. 'cursor:pointer;transition:all .12s;user-select:none}'
+			. $W . ' .jt-pill:hover{color:rgb(220,220,255)}'
+			. $W . ' .jt-pill:active{box-shadow:inset 2px 2px 4px rgba(0,0,0,0.4),inset -2px -2px 4px rgba(60,62,80,0.3)}'
+			/* LED état */
+			. $W . ' .jt-led{width:6px;height:6px;border-radius:50%;display:inline-block;margin-bottom:2px}'
 			. '</style>';
 
-		// JS : remplacer texte par icônes + ajouter classe source
+		// JS : reconstruire le layout
 		$js = '<script>'
 			. '(function(){'
 			. 'var w=document.querySelector(\'[data-eqlogic_id="' . $eqId . '"]\');'
-			. 'if(!w)return;'
-			. 'var map={'
-			. '"MarcheArr\\u00eat":["fa-power-off",""],'
-			. '"Marche/Arr\\u00eat":["fa-power-off",""],'
-			. '"Extinction":["fa-stop-circle",""],'
-			. '"Mute":["fa-volume-mute",""],'
-			. '"Volume +":["fa-volume-up",""],'
-			. '"Volume -":["fa-volume-down",""],'
-			. '"Cha\\u00eene +":["fa-chevron-up",""],'
-			. '"Cha\\u00eene -":["fa-chevron-down",""],'
-			. '"Source":["fa-sign-in-alt","jt-source"]'
-			. '};'
-			. 'w.querySelectorAll(".execute").forEach(function(btn){'
-			. 'var t=btn.textContent.trim();'
-			. 'for(var k in map){'
-			. 'if(t===k){'
-			. 'btn.innerHTML=\'<i class="fas \'+map[k][0]+\'"></i>\';'
-			. 'if(map[k][1])btn.classList.add(map[k][1]);'
-			. 'break;'
-			. '}}'
+			. 'if(!w||w.querySelector(".jt-remote"))return;'
+			// Récupérer les IDs des commandes par leur texte
+			. 'var ids={};'
+			. 'w.querySelectorAll(".execute").forEach(function(b){'
+			. 'ids[b.textContent.trim()]=b.closest(".cmd").getAttribute("data-cmd_id");'
+			. '});'
+			// Déterminer état
+			. 'var stOn=!!w.querySelector(".icon_green");'
+			. 'var ledC=stOn?"rgb(0,200,100)":"rgb(80,80,80)";'
+			// Helper
+			. 'function mkBtn(label,cls){'
+			. 'var id=ids[label];if(!id)return"";'
+			. 'return id;'
+			. '}'
+			. 'function cmd(id){jeedom.cmd.execute({id:id});}'
+			// Construire le HTML custom
+			. 'var h=\'<div class="jt-remote">\';'
+			// LED
+			. 'h+=\'<div class="jt-led" style="background:\'+ledC+\'"></div>\';'
+			// Rangée 1 : Power + Mute + Source
+			. 'h+=\'<div class="jt-row">\';'
+			. 'if(ids["MarcheArr\\u00eat"]||ids["Marche/Arr\\u00eat"]){'
+			. 'var pid=ids["MarcheArr\\u00eat"]||ids["Marche/Arr\\u00eat"];'
+			. 'h+=\'<div class="jt-btn jt-btn-pwr" data-id="\'+pid+\'"><i class="fas fa-power-off"></i></div>\';}'
+			. 'if(ids["Mute"]){'
+			. 'h+=\'<div class="jt-btn" data-id="\'+ids["Mute"]+\'"><i class="fas fa-volume-mute"></i></div>\';}'
+			. 'if(ids["Source"]){'
+			. 'h+=\'<div class="jt-pill" data-id="\'+ids["Source"]+\'"><i class="fas fa-sign-in-alt"></i> SOURCE</div>\';}'
+			. 'h+=\'</div>\';'
+			// Rangée 2 : VOL block + CH block
+			. 'h+=\'<div class="jt-row">\';'
+			// VOL block
+			. 'if(ids["Volume +"]&&ids["Volume -"]){'
+			. 'h+=\'<div class="jt-vblock">\';'
+			. 'h+=\'<div class="jt-vbtn" data-id="\'+ids["Volume +"]+\'"><i class="fas fa-plus"></i></div>\';'
+			. 'h+=\'<div class="jt-vlbl">VOL</div>\';'
+			. 'h+=\'<div class="jt-vbtn" data-id="\'+ids["Volume -"]+\'"><i class="fas fa-minus"></i></div>\';'
+			. 'h+=\'</div>\';}'
+			// Extinction au centre
+			. 'if(ids["Extinction"]){'
+			. 'h+=\'<div class="jt-btn" data-id="\'+ids["Extinction"]+\'" style="width:36px;height:36px;font-size:13px"><i class="fas fa-stop"></i></div>\';}'
+			// CH block
+			. 'if(ids["Cha\\u00eene +"]&&ids["Cha\\u00eene -"]){'
+			. 'h+=\'<div class="jt-vblock">\';'
+			. 'h+=\'<div class="jt-vbtn" data-id="\'+ids["Cha\\u00eene +"]+\'"><i class="fas fa-chevron-up"></i></div>\';'
+			. 'h+=\'<div class="jt-vlbl">CH</div>\';'
+			. 'h+=\'<div class="jt-vbtn" data-id="\'+ids["Cha\\u00eene -"]+\'"><i class="fas fa-chevron-down"></i></div>\';'
+			. 'h+=\'</div>\';}'
+			. 'h+=\'</div>\';'
+			// Fin
+			. 'h+=\'</div>\';'
+			// Injecter dans .cmds
+			. 'var cmds=w.querySelector(".cmds");'
+			. 'if(cmds){cmds.insertAdjacentHTML("beforeend",h);}'
+			// Bind clicks
+			. 'w.querySelectorAll("[data-id]").forEach(function(el){'
+			. 'el.addEventListener("click",function(){cmd(el.getAttribute("data-id"));});'
 			. '});'
 			. '})();'
 			. '</script>';
