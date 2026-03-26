@@ -227,8 +227,7 @@ class JeeTizen extends eqLogic {
 			/* Nom widget */
 			. $W . ' .widget-name a,' . $W . ' .widget-name span{color:rgb(200,200,210) !important;font-weight:600 !important}'
 			. $W . ' .widget-name .object_name{color:rgb(110,110,130) !important;font-size:0.8em;font-weight:400 !important}'
-			/* Cacher les boutons originaux - on les reconstruit */
-			. $W . ' .cmds>.action-buttons,' . $W . ' .cmds>.cmd.cmd-widget[data-type="info"]{display:none !important}'
+			/* Les boutons natifs seront cachés par le JS après reconstruction */
 			/* Container custom */
 			. $W . ' .jt-remote{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 4px}'
 			/* Rangée */
@@ -276,24 +275,23 @@ class JeeTizen extends eqLogic {
 			. $W . ' .jt-led{width:6px;height:6px;border-radius:50%;display:inline-block;margin-bottom:2px}'
 			. '</style>';
 
-		// JS : reconstruire le layout
+		// JS : reconstruire le layout avec retry
 		$js = '<script>'
 			. '(function(){'
+			. 'function build(){'
 			. 'var w=document.querySelector(\'[data-eqlogic_id="' . $eqId . '"]\');'
-			. 'if(!w||w.querySelector(".jt-remote"))return;'
+			. 'if(!w)return;'
+			. 'if(w.querySelector(".jt-remote"))return;'
 			// Récupérer les IDs des commandes par leur texte
-			. 'var ids={};'
+			. 'var ids={};var count=0;'
 			. 'w.querySelectorAll(".execute").forEach(function(b){'
-			. 'ids[b.textContent.trim()]=b.closest(".cmd").getAttribute("data-cmd_id");'
+			. 'ids[b.textContent.trim()]=b.closest(".cmd").getAttribute("data-cmd_id");count++;'
 			. '});'
+			// Si pas de boutons trouvés, ne rien faire (widget natif reste visible)
+			. 'if(count<2)return;'
 			// Déterminer état
 			. 'var stOn=!!w.querySelector(".icon_green");'
 			. 'var ledC=stOn?"rgb(0,200,100)":"rgb(80,80,80)";'
-			// Helper
-			. 'function mkBtn(label,cls){'
-			. 'var id=ids[label];if(!id)return"";'
-			. 'return id;'
-			. '}'
 			. 'function cmd(id){jeedom.cmd.execute({id:id});}'
 			// Construire le HTML custom
 			. 'var h=\'<div class="jt-remote">\';'
@@ -301,43 +299,39 @@ class JeeTizen extends eqLogic {
 			. 'h+=\'<div class="jt-led" style="background:\'+ledC+\'"></div>\';'
 			// Rangée 1 : Power + Mute + Source
 			. 'h+=\'<div class="jt-row">\';'
-			. 'if(ids["MarcheArr\\u00eat"]||ids["Marche/Arr\\u00eat"]){'
 			. 'var pid=ids["MarcheArr\\u00eat"]||ids["Marche/Arr\\u00eat"];'
-			. 'h+=\'<div class="jt-btn jt-btn-pwr" data-id="\'+pid+\'"><i class="fas fa-power-off"></i></div>\';}'
-			. 'if(ids["Mute"]){'
-			. 'h+=\'<div class="jt-btn" data-id="\'+ids["Mute"]+\'"><i class="fas fa-volume-mute"></i></div>\';}'
-			. 'if(ids["Source"]){'
-			. 'h+=\'<div class="jt-pill" data-id="\'+ids["Source"]+\'"><i class="fas fa-sign-in-alt"></i> SOURCE</div>\';}'
+			. 'if(pid)h+=\'<div class="jt-btn jt-btn-pwr" data-id="\'+pid+\'"><i class="fas fa-power-off"></i></div>\';'
+			. 'if(ids["Mute"])h+=\'<div class="jt-btn" data-id="\'+ids["Mute"]+\'"><i class="fas fa-volume-mute"></i></div>\';'
+			. 'if(ids["Source"])h+=\'<div class="jt-pill" data-id="\'+ids["Source"]+\'"><i class="fas fa-sign-in-alt"></i> SOURCE</div>\';'
 			. 'h+=\'</div>\';'
-			// Rangée 2 : VOL block + CH block
+			// Rangée 2 : VOL block + Extinction + CH block
 			. 'h+=\'<div class="jt-row">\';'
-			// VOL block
 			. 'if(ids["Volume +"]&&ids["Volume -"]){'
 			. 'h+=\'<div class="jt-vblock">\';'
 			. 'h+=\'<div class="jt-vbtn" data-id="\'+ids["Volume +"]+\'"><i class="fas fa-plus"></i></div>\';'
 			. 'h+=\'<div class="jt-vlbl">VOL</div>\';'
 			. 'h+=\'<div class="jt-vbtn" data-id="\'+ids["Volume -"]+\'"><i class="fas fa-minus"></i></div>\';'
 			. 'h+=\'</div>\';}'
-			// Extinction au centre
-			. 'if(ids["Extinction"]){'
-			. 'h+=\'<div class="jt-btn" data-id="\'+ids["Extinction"]+\'" style="width:36px;height:36px;font-size:13px"><i class="fas fa-stop"></i></div>\';}'
-			// CH block
+			. 'if(ids["Extinction"])h+=\'<div class="jt-btn" data-id="\'+ids["Extinction"]+\'" style="width:36px;height:36px;font-size:13px"><i class="fas fa-stop"></i></div>\';'
 			. 'if(ids["Cha\\u00eene +"]&&ids["Cha\\u00eene -"]){'
 			. 'h+=\'<div class="jt-vblock">\';'
 			. 'h+=\'<div class="jt-vbtn" data-id="\'+ids["Cha\\u00eene +"]+\'"><i class="fas fa-chevron-up"></i></div>\';'
 			. 'h+=\'<div class="jt-vlbl">CH</div>\';'
 			. 'h+=\'<div class="jt-vbtn" data-id="\'+ids["Cha\\u00eene -"]+\'"><i class="fas fa-chevron-down"></i></div>\';'
 			. 'h+=\'</div>\';}'
-			. 'h+=\'</div>\';'
-			// Fin
-			. 'h+=\'</div>\';'
-			// Injecter dans .cmds
+			. 'h+=\'</div></div>\';'
+			// Cacher les boutons natifs SEULEMENT maintenant
+			. 'w.querySelectorAll(".cmds>.action-buttons,.cmds>.cmd.cmd-widget[data-type=info]").forEach(function(el){el.style.display="none";});'
+			// Injecter
 			. 'var cmds=w.querySelector(".cmds");'
-			. 'if(cmds){cmds.insertAdjacentHTML("beforeend",h);}'
+			. 'if(cmds)cmds.insertAdjacentHTML("beforeend",h);'
 			// Bind clicks
 			. 'w.querySelectorAll("[data-id]").forEach(function(el){'
 			. 'el.addEventListener("click",function(){cmd(el.getAttribute("data-id"));});'
 			. '});'
+			. '}'
+			// Exécuter immédiatement + retry après 500ms (pour chargement AJAX du design)
+			. 'build();setTimeout(build,500);setTimeout(build,1500);'
 			. '})();'
 			. '</script>';
 
