@@ -218,16 +218,24 @@ class JeeTizen extends eqLogic {
 			return '';
 		}
 
-		// Injecter le CSS directement dans le HTML du widget
 		$css = '<style>'
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd-widget{display:inline-flex !important;vertical-align:top;margin:3px !important}'
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .action{border-radius:10px !important;min-width:48px;min-height:42px;padding:8px 10px !important;font-size:15px !important;transition:transform .1s}'
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .action:active{transform:scale(.92)}'
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .fa-power-off{color:rgb(229,57,53) !important}'
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd-widget[data-type="info"]{font-size:12px}'
+			/* Grille de boutons en 3 colonnes */
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .action-buttons{display:flex !important;flex-wrap:wrap;justify-content:center;gap:4px;padding:4px}'
+			/* Chaque bouton */
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget{margin:0 !important}'
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget .execute{'
+			. 'border-radius:10px !important;min-width:52px !important;min-height:40px !important;'
+			. 'padding:8px 10px !important;font-size:13px !important;font-weight:500 !important;'
+			. 'transition:transform .1s !important;border:1px solid rgba(0,0,0,0.15) !important}'
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget .execute:active{transform:scale(.92)}'
+			/* Conteneur commandes centré */
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmds{text-align:center;padding:2px}'
+			/* Info état compact */
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget[data-type="info"]{margin:2px auto !important;display:block !important}'
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget[data-type="info"] .cmdName{font-size:11px}'
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget[data-type="info"] .iconCmd i{font-size:18px}'
 			. '</style>';
 
-		// Insérer le CSS juste après le premier tag du widget
 		$pos = strpos($html, '>');
 		if ($pos !== false) {
 			$html = substr($html, 0, $pos + 1) . $css . substr($html, $pos + 1);
