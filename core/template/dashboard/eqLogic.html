@@ -1,0 +1,33 @@
+<style>
+.jtRemote .jt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:2px}
+.jtRemote .jt-b{border-radius:6px;padding:8px 4px;cursor:pointer;text-align:center;transition:opacity .15s;opacity:.85}
+.jtRemote .jt-b:hover{opacity:1}
+.jtRemote .jt-b:active{opacity:.6}
+.jtRemote .jt-b i{font-size:16px;display:block}
+.jtRemote .jt-b span{font-size:9px;opacity:.6;display:block;margin-top:1px}
+.jtRemote .jt-pwr i{color:#e53935}
+.jtRemote .jt-src{grid-column:span 3;padding:5px 4px}
+.jtRemote .jt-led{display:inline-block;width:7px;height:7px;border-radius:50%;margin:0 auto 4px;display:block}
+</style>
+<div class="jtRemote" style="text-align:center">
+    <div class="jt-led" style="background:#state_color#" title="#state_title#"></div>
+    <div class="jt-grid">
+        #btn_on_off#
+        #btn_mute#
+        #btn_off#
+        #btn_vol_up#
+        #btn_ch_up#
+        #btn_vol_down#
+        <div></div>
+        #btn_ch_down#
+        <div></div>
+        #btn_source#
+    </div>
+</div>
+<script>
+document.querySelectorAll('[data-eqlogic_id="#id#"] .jt-b').forEach(function(el){
+    el.addEventListener('click',function(){
+        jeedom.cmd.execute({id:el.getAttribute('data-cmd_id')});
+    });
+});
+</script>

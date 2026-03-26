@@ -222,15 +222,11 @@ class JeeTizen extends eqLogic {
 	 * Widget personnalisé - mini télécommande Samsung
 	 */
 	public function toHtml($_version = 'dashboard') {
-		$_version = jeedom::versionAlias($_version);
-		if ($_version == 'mobile') {
-			return parent::toHtml($_version);
-		}
-
 		$replace = $this->preToHtml($_version);
 		if (!is_array($replace)) {
 			return $replace;
 		}
+		$version = jeedom::versionAlias($_version);
 
 		// Récupérer les commandes
 		$cmds = array();
@@ -243,60 +239,32 @@ class JeeTizen extends eqLogic {
 		if (isset($cmds['state']) && is_object($cmds['state'])) {
 			$stateValue = $cmds['state']->execCmd();
 		}
-		$stateColor = $stateValue ? '#4caf50' : '#666';
-		$stateTitle = $stateValue ? 'Allumée' : 'Éteinte';
+		$replace['#state_color#'] = $stateValue ? '#4caf50' : '#666';
+		$replace['#state_title#'] = $stateValue ? 'Allumée' : 'Éteinte';
 
-		$eqId = $this->getId();
+		// Générer les boutons
+		$btnDefs = array(
+			'on_off'   => array('fas fa-power-off', 'ON/OFF', 'jt-pwr'),
+			'mute'     => array('fas fa-volume-mute', 'MUTE', ''),
+			'off'      => array('fas fa-stop', 'OFF', ''),
+			'vol_up'   => array('fas fa-volume-up', 'VOL+', ''),
+			'ch_up'    => array('fas fa-chevron-up', 'CH+', ''),
+			'vol_down' => array('fas fa-volume-down', 'VOL-', ''),
+			'ch_down'  => array('fas fa-chevron-down', 'CH-', ''),
+			'source'   => array('fas fa-external-link-alt', 'SOURCE', 'jt-src'),
+		);
+		foreach ($btnDefs as $logId => $def) {
+			$html = '';
+			if (isset($cmds[$logId])) {
+				$id = $cmds[$logId]->getId();
+				$html = '<div class="jt-b ' . $def[2] . '" data-cmd_id="' . $id . '">'
+					. '<i class="' . $def[0] . '"></i>'
+					. '<span>' . $def[1] . '</span></div>';
+			}
+			$replace['#btn_' . $logId . '#'] = $html;
+		}
 
-		// Helper bouton
-		$btn = function($logId, $icon, $label, $cls = '') use ($cmds, $eqId) {
-			if (!isset($cmds[$logId])) return '';
-			$id = $cmds[$logId]->getId();
-			return '<div class="jt' . $eqId . '-b ' . $cls . '" data-cmd_id="' . $id . '"><i class="' . $icon . '"></i><span>' . $label . '</span></div>';
-		};
-
-		// CSS scopé par eqId
-		$css = '<style>'
-			. '.jt' . $eqId . '{text-align:center;padding:2px}'
-			. '.jt' . $eqId . '-led{display:inline-block;width:7px;height:7px;border-radius:50%;margin-bottom:4px}'
-			. '.jt' . $eqId . '-g{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}'
-			. '.jt' . $eqId . '-b{border-radius:6px;padding:8px 4px;cursor:pointer;text-align:center;transition:opacity .15s;opacity:.85}'
-			. '.jt' . $eqId . '-b:hover{opacity:1}'
-			. '.jt' . $eqId . '-b:active{opacity:.6}'
-			. '.jt' . $eqId . '-b i{font-size:16px;display:block}'
-			. '.jt' . $eqId . '-b span{font-size:9px;opacity:.6;display:block;margin-top:1px}'
-			. '.jt' . $eqId . '-pwr i{color:#e53935}'
-			. '.jt' . $eqId . '-src{grid-column:span 3;padding:5px 4px}'
-			. '</style>';
-
-		// JS click handler
-		$js = '<script>'
-			. 'document.querySelectorAll(".jt' . $eqId . '-b").forEach(function(el){'
-			. 'el.addEventListener("click",function(){'
-			. 'jeedom.cmd.execute({id:el.getAttribute("data-cmd_id")});'
-			. '});'
-			. '});'
-			. '</script>';
-
-		// Contenu du widget
-		$content = $css;
-		$content .= '<div class="jt' . $eqId . '">';
-		$content .= '<div class="jt' . $eqId . '-led" style="background:' . $stateColor . '" title="' . $stateTitle . '"></div>';
-		$content .= '<div class="jt' . $eqId . '-g">';
-		$content .= $btn('on_off', 'fas fa-power-off', 'ON/OFF', 'jt' . $eqId . '-pwr');
-		$content .= $btn('mute', 'fas fa-volume-mute', 'MUTE');
-		$content .= $btn('off', 'fas fa-stop', 'OFF');
-		$content .= $btn('vol_up', 'fas fa-volume-up', 'VOL+');
-		$content .= $btn('ch_up', 'fas fa-chevron-up', 'CH+');
-		$content .= $btn('vol_down', 'fas fa-volume-down', 'VOL-');
-		$content .= '<div></div>';
-		$content .= $btn('ch_down', 'fas fa-chevron-down', 'CH-');
-		$content .= '<div></div>';
-		$content .= $btn('source', 'fas fa-external-link-alt', 'SOURCE', 'jt' . $eqId . '-src');
-		$content .= '</div></div>';
-		$content .= $js;
-
-		return $this->postToHtml($_version, $content);
+		return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'eqLogic', __CLASS__)));
 	}
 
 	/**
