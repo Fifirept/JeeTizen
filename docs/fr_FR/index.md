@@ -4,7 +4,7 @@
 
 Plugin Jeedom pour le contrôle des téléviseurs Samsung via WebSocket. Supporte les modèles Tizen (2016+) et Legacy (pré-2016).
 
-Basé sur les librairies de communication Samsung de TvDomSamsung, avec une interface conforme au template officiel Jeedom.
+Basé sur les librairies de communication Samsung de JeeTizen, avec une interface conforme au template officiel Jeedom.
 
 ## Configuration
 

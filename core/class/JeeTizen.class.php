@@ -203,8 +203,8 @@ class JeeTizen extends eqLogic {
 		// Lazy loading des librairies Samsung
 		if (!class_exists('TvConnector')) {
 			include_file('core', 'Logger', 'class', 'JeeTizen');
-			include_file('core', 'Telecommande/Connectors/TvDomSamsung.TvConnector', 'class', 'JeeTizen');
-			include_file('core', 'Telecommande/TvDomSamsung.CommunicationStatus', 'class', 'JeeTizen');
+			include_file('core', 'Telecommande/Connectors/JeeTizen.TvConnector', 'class', 'JeeTizen');
+			include_file('core', 'Telecommande/JeeTizen.CommunicationStatus', 'class', 'JeeTizen');
 		}
 		return TvParametres::getInstanceFromConfig($this);
 	}

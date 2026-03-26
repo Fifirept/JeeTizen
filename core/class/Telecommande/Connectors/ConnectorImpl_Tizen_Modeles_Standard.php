@@ -3,11 +3,11 @@
 if (defined('WEB')) {
     require_once __DIR__ . '/../../../../3rdparty/vendor/textalk/autoload.php';
     require_once __DIR__ . '/IConnector.php';
-    require_once __DIR__ . '/../TvDomSamsung.TvParametres.class.php';
+    require_once __DIR__ . '/../JeeTizen.TvParametres.class.php';
 } else {
     require_once __DIR__ . '/../../../../3rdparty/vendor/textalk/autoload.php';
     require_once __DIR__ . '/IConnector.php';
-    require_once __DIR__ . '/../TvDomSamsung.TvParametres.class.php';
+    require_once __DIR__ . '/../JeeTizen.TvParametres.class.php';
 }
 
 class ConnectorImpl_Tizen_Modeles_Standard implements IConnector
