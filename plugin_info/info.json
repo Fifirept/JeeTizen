@@ -1,0 +1,31 @@
+{
+	"id": "JeeTizen",
+	"name": "JeeTizen",
+	"pluginVersion": "1.0",
+	"description": {
+		"fr_FR": "Contrôle des téléviseurs Samsung Tizen et Legacy via WebSocket et Wake On LAN"
+	},
+	"licence": "AGPL",
+	"author": "",
+	"require": "4.2",
+	"os": {
+		"min": 11,
+		"max": 12.99
+	},
+	"category": "multimedia",
+	"hasDependency": false,
+	"hasOwnDeamon": false,
+	"changelog": "",
+	"documentation": "",
+	"language": [
+		"fr_FR"
+	],
+	"compatibility": [
+		"smart",
+		"luna",
+		"atlas",
+		"rpi",
+		"docker",
+		"diy"
+	]
+}
