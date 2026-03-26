@@ -245,29 +245,28 @@ class JeeTizen extends eqLogic {
 	}
 
 	/**
-	 * Widget télécommande Samsung - charge le template sombre ou clair
+	 * Widget télécommande Samsung - charge le fichier template sombre ou clair
 	 */
 	public function toHtml($_version = 'dashboard') {
-		$html = parent::toHtml($_version);
-		if ($html == '') {
-			return '';
+		$template = $this->getConfiguration('widget_template', 'dark');
+
+		// Template "aucun" → rendu natif Jeedom
+		if ($template == 'none') {
+			return parent::toHtml($_version);
 		}
 
-		$template = $this->getConfiguration('widget_template', 'dark');
-		if ($template == 'none') {
-			return $html;
+		$_version = jeedom::versionAlias($_version);
+		if (!$this->hasRight('r')) {
+			return '';
 		}
 
 		$eqId = $this->getId();
 
-		// Charger le fichier template
-		$tplFile = 'dark';
-		if ($template == 'light') {
-			$tplFile = 'light';
-		}
+		// Charger le fichier template HTML
+		$tplFile = ($template == 'light') ? 'light' : 'dark';
 		$tplPath = __DIR__ . '/../template/widget/remote_' . $tplFile . '.html';
 		if (!file_exists($tplPath)) {
-			return $html;
+			return parent::toHtml($_version);
 		}
 		$tplHtml = file_get_contents($tplPath);
 
@@ -280,9 +279,9 @@ class JeeTizen extends eqLogic {
 			}
 		}
 
-		// Pas assez de commandes = fallback natif
+		// Pas assez de commandes → fallback natif
 		if (count($cmdMap) < 3) {
-			return $html;
+			return parent::toHtml($_version);
 		}
 
 		// État
@@ -314,26 +313,28 @@ class JeeTizen extends eqLogic {
 		);
 		$tplHtml = str_replace(array_keys($replace), array_values($replace), $tplHtml);
 
-		// Cacher les boutons natifs, injecter le template
-		$nameColor = ($template == 'light') ? 'rgb(68,68,68)' : 'rgb(200,200,210)';
-		$objColor = ($template == 'light') ? 'rgb(140,140,140)' : 'rgb(110,110,130)';
-		$bgColor = ($template == 'light') ? 'rgb(253,250,240)' : 'rgb(26,26,26)';
-
-		$wrapper = '<style>'
-			. '[data-eqlogic_id="' . $eqId . '"]{background:' . $bgColor . ' !important;border:none !important;padding:0 !important}'
-			. '[data-eqlogic_id="' . $eqId . '"] .widget-name a,[data-eqlogic_id="' . $eqId . '"] .widget-name span{color:' . $nameColor . ' !important}'
-			. '[data-eqlogic_id="' . $eqId . '"] .widget-name .object_name{color:' . $objColor . ' !important;font-size:0.8em}'
-			. '[data-eqlogic_id="' . $eqId . '"] .cmds>.action-buttons,[data-eqlogic_id="' . $eqId . '"] .cmds>.cmd.cmd-widget[data-type="info"]{display:none !important}'
-			. '</style>';
-
-		// Injecter le style après le premier tag
-		$pos = strpos($html, '>');
-		if ($pos !== false) {
-			$html = substr($html, 0, $pos + 1) . $wrapper . substr($html, $pos + 1);
+		// Construire le wrapper Jeedom minimal (pour resize + design + identification)
+		$name = $this->getName();
+		$objectName = '';
+		$object = $this->getObject();
+		if (is_object($object)) {
+			$objectName = $object->getName();
 		}
+		$eqLink = 'index.php?v=d&p=JeeTizen&m=JeeTizen&id=' . $eqId;
+		$uid = 'eqLogic' . $eqId . '__' . mt_rand() . '__';
 
-		// Ajouter le template avant la fermeture du widget
-		$html .= $tplHtml;
+		$width = $this->getDisplay('width', '280px');
+		$height = $this->getDisplay('height', 'auto');
+
+		$html = '<div class="eqLogic eqLogic-widget allowResize" '
+			. 'data-eqtype="JeeTizen" '
+			. 'data-eqlogic_id="' . $eqId . '" '
+			. 'data-eqlogic_uid="' . $uid . '" '
+			. 'data-version="' . $_version . '" '
+			. 'data-category="multimedia" '
+			. 'style="width:' . $width . ';height:' . $height . ';">'
+			. $tplHtml
+			. '</div>';
 
 		return $html;
 	}
