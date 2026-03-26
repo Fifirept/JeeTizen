@@ -26,11 +26,6 @@ require_once __DIR__ . '/../../../../core/php/core.inc.php';
 class JeeTizen extends eqLogic {
 	/*     * *************************Attributs****************************** */
 
-	public static $_widgetPossibility = array(
-		'custom' => true,
-		'custom::layout' => false,
-	);
-
 	const DEFAULT_COMMANDS = [
 		// [logicalId, nom, type, subType, isVisible, config, genericType, icon]
 		['on_off',   'Marche/Arrêt', 'action', 'other',   1, [], 'ENERGY_ON', 'fas fa-power-off'],
@@ -150,10 +145,6 @@ class JeeTizen extends eqLogic {
 	}
 
 	public function preSave() {
-		// Taille par défaut du widget si non définie
-		if ($this->getDisplay('width') == '' || $this->getDisplay('width') == '0') {
-			$this->setDisplay('width', '175px');
-		}
 	}
 
 	public function postSave() {
@@ -216,57 +207,6 @@ class JeeTizen extends eqLogic {
 	}
 
 	public function postRemove() {
-	}
-
-	/**
-	 * Widget personnalisé - mini télécommande Samsung
-	 */
-	public function toHtml($_version = 'dashboard') {
-		$replace = $this->preToHtml($_version);
-		if (!is_array($replace)) {
-			return $replace;
-		}
-		$version = jeedom::versionAlias($_version);
-
-		// Récupérer les commandes
-		$cmds = array();
-		foreach ($this->getCmd() as $cmd) {
-			$cmds[$cmd->getLogicalId()] = $cmd;
-		}
-
-		// État
-		$stateValue = 0;
-		if (isset($cmds['state']) && is_object($cmds['state'])) {
-			$stateValue = $cmds['state']->execCmd();
-		}
-		$replace['#state_r#'] = $stateValue ? '76' : '102';
-		$replace['#state_g#'] = $stateValue ? '175' : '102';
-		$replace['#state_b#'] = $stateValue ? '80' : '102';
-		$replace['#state_title#'] = $stateValue ? 'Allumée' : 'Éteinte';
-
-		// Générer les boutons
-		$btnDefs = array(
-			'on_off'   => array('fas fa-power-off', 'ON/OFF', 'jt-pwr'),
-			'mute'     => array('fas fa-volume-mute', 'MUTE', ''),
-			'off'      => array('fas fa-stop', 'OFF', ''),
-			'vol_up'   => array('fas fa-volume-up', 'VOL+', ''),
-			'ch_up'    => array('fas fa-chevron-up', 'CH+', ''),
-			'vol_down' => array('fas fa-volume-down', 'VOL-', ''),
-			'ch_down'  => array('fas fa-chevron-down', 'CH-', ''),
-			'source'   => array('fas fa-external-link-alt', 'SOURCE', 'jt-src'),
-		);
-		foreach ($btnDefs as $logId => $def) {
-			$html = '';
-			if (isset($cmds[$logId])) {
-				$id = $cmds[$logId]->getId();
-				$html = '<div class="jt-b ' . $def[2] . '" data-cmd_id="' . $id . '">'
-					. '<i class="' . $def[0] . '"></i>'
-					. '<span>' . $def[1] . '</span></div>';
-			}
-			$replace['#btn_' . $logId . '#'] = $html;
-		}
-
-		return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'eqLogic', __CLASS__)));
 	}
 
 	/**
