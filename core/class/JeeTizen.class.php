@@ -245,7 +245,7 @@ class JeeTizen extends eqLogic {
 	}
 
 	/**
-	 * Widget télécommande Samsung - template sombre ou clair
+	 * Widget télécommande Samsung - charge le template sombre ou clair
 	 */
 	public function toHtml($_version = 'dashboard') {
 		$html = parent::toHtml($_version);
@@ -260,6 +260,17 @@ class JeeTizen extends eqLogic {
 
 		$eqId = $this->getId();
 
+		// Charger le fichier template
+		$tplFile = 'dark';
+		if ($template == 'light') {
+			$tplFile = 'light';
+		}
+		$tplPath = __DIR__ . '/../template/widget/remote_' . $tplFile . '.html';
+		if (!file_exists($tplPath)) {
+			return $html;
+		}
+		$tplHtml = file_get_contents($tplPath);
+
 		// Map logicalId -> cmd_id
 		$cmdMap = array();
 		foreach ($this->getCmd() as $cmd) {
@@ -268,121 +279,63 @@ class JeeTizen extends eqLogic {
 				$cmdMap[$lid] = $cmd->getId();
 			}
 		}
-		$stateCmd = $this->getCmd('info', 'state');
-		$stateOn = (is_object($stateCmd) && $stateCmd->execCmd()) ? 'true' : 'false';
-		$cmdJson = json_encode($cmdMap);
-		$isDark = ($template !== 'light') ? 'true' : 'false';
 
-		$js = '<script>'
-			. '(function(){'
-			. 'function build(){'
-			. 'var w=document.querySelector(\'[data-eqlogic_id="' . $eqId . '"]\');'
-			. 'if(!w||w.querySelector(".jt-rc"))return;'
-			. 'var C=' . $cmdJson . ';'
-			. 'if(!C.on_off&&!C.mute)return;'
-			. 'var dk=' . $isDark . ',stOn=' . $stateOn . ';'
-			// Couleurs thème
-			. 'var bg=dk?"rgb(26,26,26)":"rgb(253,250,240)";'
-			. 'var bdr=dk?"rgb(51,51,51)":"rgb(239,230,213)";'
-			. 'var btnBg=dk?"rgb(51,51,51)":"rgb(230,223,204)";'
-			. 'var btnBdr=dk?"rgb(68,68,68)":"rgb(220,211,188)";'
-			. 'var txtC=dk?"white":"rgb(68,68,68)";'
-			. 'var lblC=dk?"rgb(102,102,102)":"rgb(85,85,68)";'
-			. 'var padBg=dk?"rgb(34,34,34)":"rgb(230,223,204)";'
-			. 'var okBg=dk?"radial-gradient(circle,rgb(68,68,68),rgb(34,34,34))":"rgb(253,250,240)";'
-			. 'var okBdr=dk?"rgb(85,85,85)":"rgb(220,211,188)";'
-			. 'var ledC=stOn?"rgb(0,200,100)":"rgb(80,80,80)";'
-			// Style
-			. 'w.style.cssText="background:"+bg+"!important;border:1px solid "+bdr+"!important;border-radius:24px!important;padding:0!important;overflow:hidden";'
-			// Helper
-			. 'function ex(id){jeedom.cmd.execute({id:String(id)});}'
-			. 'function B(id,inner,cls,style){'
-			. 'return \'<button class="\'+cls+\'" data-id="\'+id+\'" style="\'+style+\'">\'+inner+\'</button>\';}'
-			// SVGs
-			. 'var svgPwr=\'<svg viewBox="0 0 24 24" style="width:28px;height:28px;stroke:white;fill:none"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.77 0" stroke-width="2.5" stroke-linecap="round"/></svg>\';'
-			. 'var svgSrc=\'<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:\'+txtC+\';stroke-width:2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M11 12h7M15 9l3 3-3 3"/></svg>\';'
-			. 'var svgUp=\'<svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:\'+lblC+\'"><path d="M7 14l5-5 5 5z"/></svg>\';'
-			. 'var svgDn=\'<svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:\'+lblC+\'"><path d="M7 10l5 5 5-5z"/></svg>\';'
-			. 'var svgLt=\'<svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:\'+lblC+\'"><path d="M14 7l-5 5 5 5z"/></svg>\';'
-			. 'var svgRt=\'<svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:\'+lblC+\'"><path d="M10 17l5-5-5-5z"/></svg>\';'
-			. 'var svgMute=\'<svg viewBox="0 0 24 24" style="width:60%;height:60%;fill:\'+txtC+\'"><path d="M5 9v6h4l5 5V4l-5 5H5z"/><line x1="4" y1="4" x2="20" y2="20" stroke="\'+txtC+\'" stroke-width="2"/></svg>\';'
-			. 'var svgRet=\'<svg viewBox="0 0 24 24" style="width:90%;height:24px;fill:\'+txtC+\'"><path d="M12.5 8c-2.6 0-5 1-6.9 2.6L2 7v9h9l-3.6-3.6c1.4-1.2 3.1-1.9 5.1-1.9 3.5 0 6.5 2.3 7.6 5.5l2.4-.8c-1.3-4.1-5.2-7.1-9.9-7.1z"/></svg>\';'
-			. 'var svgHome=\'<svg viewBox="0 0 24 24" style="width:90%;height:24px;fill:\'+txtC+\'"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>\';'
-			// Styles communs
-			. 'var sBtn="background:"+btnBg+";border:1px solid "+btnBdr+";color:"+txtC+";cursor:pointer;display:flex;align-items:center;justify-content:center;";'
-			. 'var sVert=sBtn+"border-radius:15px;width:70px;height:70px;flex-direction:column;padding:0;font-size:14px;";'
-			. 'var sRect=sBtn+"border-radius:12px;height:50px;flex:1;font-weight:bold;flex-direction:column;padding:4px;";'
-			// Construire
-			. 'var h=\'<div class="jt-rc" style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:14px">\';'
-			// LED
-			. 'h+=\'<div style="width:6px;height:6px;border-radius:50%;background:\'+ledC+\'"></div>\';'
-			// Row 1 : Power + Source
-			. 'h+=\'<div style="display:flex;width:100%;justify-content:space-between;align-items:center">\';'
-			. 'if(C.on_off)h+=\'<button class="jt-x" data-id="\'+C.on_off+\'" style="width:50px;height:50px;border-radius:50%;border:none;cursor:pointer;background:radial-gradient(circle at 35% 35%,rgb(255,51,51),rgb(170,0,0),rgb(102,0,0));display:flex;justify-content:center;align-items:center">\'+svgPwr+\'</button>\';'
-			. 'if(C.source)h+=\'<button class="jt-x" data-id="\'+C.source+\'" style="\'+sBtn+\'width:90px;height:38px;border-radius:10px;font-weight:bold;gap:6px;font-size:11px">\'+svgSrc+\' SOURCE</button>\';'
-			. 'h+=\'</div>\';'
-			// PAD navigation
-			. 'if(C.up&&C.down&&C.left&&C.right&&C.enter){'
-			. 'h+=\'<div style="position:relative;width:160px;height:160px;border-radius:50%;background:\'+padBg+\';overflow:hidden;box-shadow:inset 0 0 15px rgba(0,0,0,\'+(dk?0.5:0.05)+\')">\';'
-			. 'var aS="position:absolute;width:100%;height:100%;top:0;left:0;background:transparent;border:none;cursor:pointer;padding:0;z-index:2;";'
-			. 'var svgS="pointer-events:none;position:absolute;";'
-			. 'h+=\'<button class="jt-x" data-id="\'+C.up+\'" style="\'+aS+\'clip-path:polygon(50% 50%,0% 0%,100% 0%)"><div style="\'+svgS+\'top:10px;left:50%;transform:translateX(-50%)">\'+svgUp+\'</div></button>\';'
-			. 'h+=\'<button class="jt-x" data-id="\'+C.down+\'" style="\'+aS+\'clip-path:polygon(50% 50%,0% 100%,100% 100%)"><div style="\'+svgS+\'bottom:10px;left:50%;transform:translateX(-50%)">\'+svgDn+\'</div></button>\';'
-			. 'h+=\'<button class="jt-x" data-id="\'+C.left+\'" style="\'+aS+\'clip-path:polygon(50% 50%,0% 0%,0% 100%)"><div style="\'+svgS+\'left:10px;top:50%;transform:translateY(-50%)">\'+svgLt+\'</div></button>\';'
-			. 'h+=\'<button class="jt-x" data-id="\'+C.right+\'" style="\'+aS+\'clip-path:polygon(50% 50%,100% 0%,100% 100%)"><div style="\'+svgS+\'right:10px;top:50%;transform:translateY(-50%)">\'+svgRt+\'</div></button>\';'
-			. 'h+=\'<button class="jt-x" data-id="\'+C.enter+\'" style="position:absolute;top:50%;left:50%;width:60px;height:60px;transform:translate(-50%,-50%);border-radius:50%;background:\'+okBg+\';border:1px solid \'+okBdr+\';color:\'+txtC+\';font-weight:bold;font-size:16px;z-index:10;cursor:pointer;display:flex;justify-content:center;align-items:center">OK</button>\';'
-			. 'h+=\'</div>\';}'
-			// VOL + MUTE + CH
-			. 'h+=\'<div style="display:flex;width:100%;justify-content:center;gap:8px;align-items:center">\';'
-			. 'if(C.vol_up&&C.vol_down){'
-			. 'h+=\'<div style="display:flex;flex-direction:column;gap:8px">\';'
-			. 'h+=\'<button class="jt-x" data-id="\'+C.vol_up+\'" style="\'+sVert+\'"><b style="font-size:22px">+</b><span style="font-size:11px;font-weight:bold">VOL</span></button>\';'
-			. 'h+=\'<button class="jt-x" data-id="\'+C.vol_down+\'" style="\'+sVert+\'"><span style="font-size:11px;font-weight:bold">VOL</span><b style="font-size:22px">-</b></button>\';'
-			. 'h+=\'</div>\';}'
-			. 'if(C.mute)h+=\'<button class="jt-x" data-id="\'+C.mute+\'" style="\'+sBtn+\'width:55px;height:55px;border-radius:50%">\'+svgMute+\'</button>\';'
-			. 'if(C.ch_up&&C.ch_down){'
-			. 'h+=\'<div style="display:flex;flex-direction:column;gap:8px">\';'
-			. 'h+=\'<button class="jt-x" data-id="\'+C.ch_up+\'" style="\'+sVert+\'"><b style="font-size:18px">▲</b><span style="font-size:11px;font-weight:bold">CH</span></button>\';'
-			. 'h+=\'<button class="jt-x" data-id="\'+C.ch_down+\'" style="\'+sVert+\'"><span style="font-size:11px;font-weight:bold">CH</span><b style="font-size:18px">▼</b></button>\';'
-			. 'h+=\'</div>\';}'
-			. 'h+=\'</div>\';'
-			// RETOUR + HOME
-			. 'h+=\'<div style="display:flex;width:100%;gap:10px">\';'
-			. 'if(C["return"])h+=\'<button class="jt-x" data-id="\'+C["return"]+\'" style="\'+sRect+\'">\'+svgRet+\'<span style="font-size:11px">RETOUR</span></button>\';'
-			. 'if(C.home)h+=\'<button class="jt-x" data-id="\'+C.home+\'" style="\'+sRect+\'">\'+svgHome+\'<span style="font-size:11px">HOME</span></button>\';'
-			. 'h+=\'</div>\';'
-			// TV + HDMI
-			. 'h+=\'<div style="display:flex;width:100%;gap:8px">\';'
-			. 'if(C.tv)h+=\'<button class="jt-x" data-id="\'+C.tv+\'" style="\'+sRect+\'font-size:12px">TV</button>\';'
-			. 'if(C.hdmi1)h+=\'<button class="jt-x" data-id="\'+C.hdmi1+\'" style="\'+sRect+\'font-size:12px">HDMI 1</button>\';'
-			. 'if(C.hdmi2)h+=\'<button class="jt-x" data-id="\'+C.hdmi2+\'" style="\'+sRect+\'font-size:12px">HDMI 2</button>\';'
-			. 'h+=\'</div>\';'
-			. 'h+=\'</div>\';'
-			// Cacher natifs + injecter
-			. 'w.querySelectorAll(".cmds>.action-buttons,.cmds>.cmd.cmd-widget[data-type=info]").forEach(function(el){el.style.display="none";});'
-			. 'var cmds=w.querySelector(".cmds");'
-			. 'if(cmds)cmds.insertAdjacentHTML("beforeend",h);'
-			// Active effect
-			. 'w.querySelectorAll(".jt-x").forEach(function(el){'
-			. 'el.addEventListener("click",function(){ex(el.getAttribute("data-id"));});'
-			. 'el.style.transition="filter 0.1s";'
-			. 'el.addEventListener("mousedown",function(){el.style.filter="brightness(1.4)";});'
-			. 'el.addEventListener("mouseup",function(){el.style.filter="";});'
-			. 'el.addEventListener("mouseleave",function(){el.style.filter="";});'
-			. '});'
-			. '}'
-			. 'build();setTimeout(build,500);setTimeout(build,1500);'
-			. '})();'
-			. '</script>';
-
-		$pos = strpos($html, '>');
-		if ($pos !== false) {
-			// Cacher widget-name natif si template actif
-			$hideStyle = '<style>[data-eqlogic_id="' . $eqId . '"] .widget-name{color:' . ($template == 'light' ? 'rgb(68,68,68)' : 'rgb(200,200,210)') . ' !important}[data-eqlogic_id="' . $eqId . '"] .widget-name a{color:inherit !important}[data-eqlogic_id="' . $eqId . '"] .widget-name .object_name{color:' . ($template == 'light' ? 'rgb(140,140,140)' : 'rgb(110,110,130)') . ' !important;font-size:0.8em}</style>';
-			$html = substr($html, 0, $pos + 1) . $hideStyle . substr($html, $pos + 1);
+		// Pas assez de commandes = fallback natif
+		if (count($cmdMap) < 3) {
+			return $html;
 		}
 
-		return $html . $js;
+		// État
+		$stateCmd = $this->getCmd('info', 'state');
+		$stateOn = (is_object($stateCmd) && $stateCmd->execCmd());
+		$ledColor = $stateOn ? 'rgb(0,200,100)' : 'rgb(80,80,80)';
+
+		// Remplacements dans le template
+		$replace = array(
+			'#eqId#'         => $eqId,
+			'#ledColor#'     => $ledColor,
+			'#cmd_on_off#'   => isset($cmdMap['on_off']) ? $cmdMap['on_off'] : '',
+			'#cmd_source#'   => isset($cmdMap['source']) ? $cmdMap['source'] : '',
+			'#cmd_up#'       => isset($cmdMap['up']) ? $cmdMap['up'] : '',
+			'#cmd_down#'     => isset($cmdMap['down']) ? $cmdMap['down'] : '',
+			'#cmd_left#'     => isset($cmdMap['left']) ? $cmdMap['left'] : '',
+			'#cmd_right#'    => isset($cmdMap['right']) ? $cmdMap['right'] : '',
+			'#cmd_enter#'    => isset($cmdMap['enter']) ? $cmdMap['enter'] : '',
+			'#cmd_vol_up#'   => isset($cmdMap['vol_up']) ? $cmdMap['vol_up'] : '',
+			'#cmd_vol_down#' => isset($cmdMap['vol_down']) ? $cmdMap['vol_down'] : '',
+			'#cmd_mute#'     => isset($cmdMap['mute']) ? $cmdMap['mute'] : '',
+			'#cmd_ch_up#'    => isset($cmdMap['ch_up']) ? $cmdMap['ch_up'] : '',
+			'#cmd_ch_down#'  => isset($cmdMap['ch_down']) ? $cmdMap['ch_down'] : '',
+			'#cmd_return#'   => isset($cmdMap['return']) ? $cmdMap['return'] : '',
+			'#cmd_home#'     => isset($cmdMap['home']) ? $cmdMap['home'] : '',
+			'#cmd_tv#'       => isset($cmdMap['tv']) ? $cmdMap['tv'] : '',
+			'#cmd_hdmi1#'    => isset($cmdMap['hdmi1']) ? $cmdMap['hdmi1'] : '',
+			'#cmd_hdmi2#'    => isset($cmdMap['hdmi2']) ? $cmdMap['hdmi2'] : '',
+		);
+		$tplHtml = str_replace(array_keys($replace), array_values($replace), $tplHtml);
+
+		// Cacher les boutons natifs, injecter le template
+		$nameColor = ($template == 'light') ? 'rgb(68,68,68)' : 'rgb(200,200,210)';
+		$objColor = ($template == 'light') ? 'rgb(140,140,140)' : 'rgb(110,110,130)';
+		$bgColor = ($template == 'light') ? 'rgb(253,250,240)' : 'rgb(26,26,26)';
+
+		$wrapper = '<style>'
+			. '[data-eqlogic_id="' . $eqId . '"]{background:' . $bgColor . ' !important;border:none !important;padding:0 !important}'
+			. '[data-eqlogic_id="' . $eqId . '"] .widget-name a,[data-eqlogic_id="' . $eqId . '"] .widget-name span{color:' . $nameColor . ' !important}'
+			. '[data-eqlogic_id="' . $eqId . '"] .widget-name .object_name{color:' . $objColor . ' !important;font-size:0.8em}'
+			. '[data-eqlogic_id="' . $eqId . '"] .cmds>.action-buttons,[data-eqlogic_id="' . $eqId . '"] .cmds>.cmd.cmd-widget[data-type="info"]{display:none !important}'
+			. '</style>';
+
+		// Injecter le style après le premier tag
+		$pos = strpos($html, '>');
+		if ($pos !== false) {
+			$html = substr($html, 0, $pos + 1) . $wrapper . substr($html, $pos + 1);
+		}
+
+		// Ajouter le template avant la fermeture du widget
+		$html .= $tplHtml;
+
+		return $html;
 	}
 
 	/**
