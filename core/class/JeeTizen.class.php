@@ -218,25 +218,22 @@ class JeeTizen extends eqLogic {
 			return '';
 		}
 
-		// Injecter le CSS une seule fois (vérifie si déjà présent)
-		$cssId = 'jeetizen-widget-css';
-		$css = '<style id="' . $cssId . '">'
-			. '[data-eqtype="JeeTizen"] .cmd-widget{display:inline-block;vertical-align:top;margin:2px}'
-			. '[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .btn-sm{'
-			. 'border-radius:8px;min-width:44px;min-height:38px;padding:6px 8px;font-size:14px;'
-			. 'transition:opacity .15s,transform .1s}'
-			. '[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .btn-sm:active{transform:scale(.93)}'
-			. '[data-eqtype="JeeTizen"] .cmd-widget .fa-power-off{color:rgb(229,57,53)}'
-			. '[data-eqtype="JeeTizen"] .cmd-widget[data-type="info"]{font-size:12px}'
+		// Injecter le CSS directement dans le HTML du widget
+		$css = '<style>'
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd-widget{display:inline-flex !important;vertical-align:top;margin:3px !important}'
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .action{border-radius:10px !important;min-width:48px;min-height:42px;padding:8px 10px !important;font-size:15px !important;transition:transform .1s}'
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .action:active{transform:scale(.92)}'
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd-widget[data-type="action"] .fa-power-off{color:rgb(229,57,53) !important}'
+			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd-widget[data-type="info"]{font-size:12px}'
 			. '</style>';
 
-		$script = '<script>'
-			. 'if(!document.getElementById("' . $cssId . '")){'
-			. 'document.head.insertAdjacentHTML("beforeend",\'' . str_replace("'", "\\'", $css) . '\');'
-			. '}'
-			. '</script>';
+		// Insérer le CSS juste après le premier tag du widget
+		$pos = strpos($html, '>');
+		if ($pos !== false) {
+			$html = substr($html, 0, $pos + 1) . $css . substr($html, $pos + 1);
+		}
 
-		return $html . $script;
+		return $html;
 	}
 
 	/**
