@@ -218,48 +218,71 @@ class JeeTizen extends eqLogic {
 			return '';
 		}
 
+		$eqId = $this->getId();
+		$W = '.eqLogic-widget[data-eqtype="JeeTizen"]';
+
 		$css = '<style>'
-			/* Fond sombre sur la tuile */
-			. '.eqLogic-widget[data-eqtype="JeeTizen"]{background:linear-gradient(145deg,rgb(26,26,46),rgb(22,33,62)) !important;border:none !important}'
-			/* Nom du widget en blanc */
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .widget-name a,.eqLogic-widget[data-eqtype="JeeTizen"] .widget-name span{color:rgb(220,220,220) !important}'
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .widget-name .object_name{color:rgb(140,140,140) !important;font-size:0.8em}'
-			/* Conteneur commandes */
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmds{padding:4px}'
-			/* Groupes de boutons en grille */
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .action-buttons{display:flex !important;flex-wrap:wrap;justify-content:center;gap:5px;padding:3px 0}'
-			/* Chaque commande */
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget{margin:0 !important}'
-			/* Boutons : style télécommande sombre */
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget .execute{'
+			/* Fond sombre tuile */
+			. $W . '{background:linear-gradient(145deg,rgb(26,26,46),rgb(22,33,62)) !important;border:none !important}'
+			/* Nom widget blanc */
+			. $W . ' .widget-name a,' . $W . ' .widget-name span{color:rgb(220,220,220) !important}'
+			. $W . ' .widget-name .object_name{color:rgb(140,140,140) !important;font-size:0.8em}'
+			/* Conteneur */
+			. $W . ' .cmds{padding:4px}'
+			/* Grille boutons */
+			. $W . ' .action-buttons{display:flex !important;flex-wrap:wrap;justify-content:center;gap:5px;padding:4px 0}'
+			/* Commandes */
+			. $W . ' .cmd.cmd-widget{margin:0 !important}'
+			/* Boutons sombres */
+			. $W . ' .cmd.cmd-widget .execute{'
 			. 'background:linear-gradient(145deg,rgb(42,42,74),rgb(30,30,58)) !important;'
 			. 'border:1px solid rgba(255,255,255,0.06) !important;'
 			. 'border-radius:10px !important;'
 			. 'color:rgb(200,200,200) !important;'
-			. 'min-width:52px !important;min-height:40px !important;'
-			. 'padding:8px 10px !important;font-size:12px !important;font-weight:500 !important;'
+			. 'min-width:48px !important;min-height:44px !important;'
+			. 'padding:6px 8px !important;font-size:16px !important;'
+			. 'display:inline-flex !important;align-items:center !important;justify-content:center !important;'
 			. 'transition:all .15s !important;text-shadow:none !important}'
 			/* Hover */
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget .execute:hover{'
+			. $W . ' .cmd.cmd-widget .execute:hover{'
 			. 'background:linear-gradient(145deg,rgb(58,58,90),rgb(46,46,74)) !important;'
-			. 'color:rgb(255,255,255) !important;transform:scale(1.03)}'
-			/* Active/clic */
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget .execute:active{'
-			. 'transform:scale(0.93) !important;'
+			. 'color:rgb(255,255,255) !important;transform:scale(1.05)}'
+			/* Clic */
+			. $W . ' .cmd.cmd-widget .execute:active{'
+			. 'transform:scale(0.92) !important;'
 			. 'background:linear-gradient(145deg,rgb(26,26,58),rgb(21,21,48)) !important}'
+			/* Power en rouge */
+			. $W . ' .cmd.cmd-widget .execute .fa-power-off{color:rgb(255,82,82) !important}'
+			/* Source en cyan */
+			. $W . ' .cmd.cmd-widget .execute .fa-external-link-alt{color:rgb(128,203,196) !important}'
 			/* Info état */
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget[data-type="info"]{display:block !important;margin:4px auto !important}'
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget[data-type="info"] .cmdName{color:rgb(160,160,160) !important;font-size:10px}'
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget[data-type="info"] .iconCmd .icon_green{color:rgb(0,230,118) !important;text-shadow:0 0 8px rgba(0,230,118,0.6)}'
-			. '.eqLogic-widget[data-eqtype="JeeTizen"] .cmd.cmd-widget[data-type="info"] .iconCmd .icon_red{color:rgb(255,82,82) !important}'
+			. $W . ' .cmd.cmd-widget[data-type="info"]{display:block !important;margin:4px auto !important}'
+			. $W . ' .cmd.cmd-widget[data-type="info"] .cmdName{color:rgb(160,160,160) !important;font-size:10px}'
+			. $W . ' .cmd.cmd-widget[data-type="info"] .iconCmd .icon_green{color:rgb(0,230,118) !important;text-shadow:0 0 8px rgba(0,230,118,0.6)}'
+			. $W . ' .cmd.cmd-widget[data-type="info"] .iconCmd .icon_red{color:rgb(255,82,82) !important}'
 			. '</style>';
+
+		// JS pour remplacer le texte des boutons par des icônes
+		$js = '<script>'
+			. '(function(){'
+			. 'var w=document.querySelector(\'[data-eqlogic_id="' . $eqId . '"]\');'
+			. 'if(!w)return;'
+			. 'var map={"MarcheArr\\u00eat":"fa-power-off","Marche/Arr\\u00eat":"fa-power-off","Extinction":"fa-stop","Mute":"fa-volume-mute","Volume +":"fa-volume-up","Volume -":"fa-volume-down","Cha\\u00eene +":"fa-chevron-up","Cha\\u00eene -":"fa-chevron-down","Source":"fa-external-link-alt"};'
+			. 'w.querySelectorAll(".execute").forEach(function(btn){'
+			. 'var t=btn.textContent.trim();'
+			. 'for(var k in map){'
+			. 'if(t===k){btn.innerHTML=\'<i class="fas \'+map[k]+\'"></i>\';break;}'
+			. '}'
+			. '});'
+			. '})();'
+			. '</script>';
 
 		$pos = strpos($html, '>');
 		if ($pos !== false) {
 			$html = substr($html, 0, $pos + 1) . $css . substr($html, $pos + 1);
 		}
 
-		return $html;
+		return $html . $js;
 	}
 
 	/**
