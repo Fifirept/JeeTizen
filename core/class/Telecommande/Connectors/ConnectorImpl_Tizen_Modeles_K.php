@@ -3,14 +3,14 @@
 if (defined('WEB')) {
     require_once __DIR__ . '/../../../../3rdparty/vendor/ratchetphp/autoload.php';
     require_once __DIR__ . '/IConnector.php';
-    require_once __DIR__ . '/../TvDomSamsung.TvParametres.class.php';
+    require_once __DIR__ . '/../JeeTizen.TvParametres.class.php';
     // core.inc.php déjà chargé via la classe principale
     
     
 } else {
     require_once __DIR__ . '/../../../../3rdparty/vendor/ratchetphp/autoload.php';
     require_once __DIR__ . '/IConnector.php';
-    require_once __DIR__ . '/../TvDomSamsung.TvParametres.class.php';
+    require_once __DIR__ . '/../JeeTizen.TvParametres.class.php';
 }
 
 	
