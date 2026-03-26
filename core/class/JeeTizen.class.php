@@ -245,6 +245,8 @@ class JeeTizen extends eqLogic {
 			/* Power */
 			. $W . ' .jt-btn-pwr{color:rgb(200,70,80)}'
 			. $W . ' .jt-btn-pwr:hover{color:rgb(240,90,100)}'
+			/* OFF petit bouton central */
+			. $W . ' .jt-btn-off{width:36px !important;height:36px !important;font-size:13px !important}'
 			/* Bloc vertical (VOL, CH) */
 			. $W . ' .jt-vblock{'
 			. 'background:rgb(42,44,58);'
@@ -275,62 +277,67 @@ class JeeTizen extends eqLogic {
 			. $W . ' .jt-led{width:6px;height:6px;border-radius:50%;display:inline-block;margin-bottom:2px}'
 			. '</style>';
 
-		// JS : reconstruire le layout avec retry
+		// Construire la map logicalId -> cmd_id en PHP
+		$cmdMap = array();
+		foreach ($this->getCmd() as $cmd) {
+			$lid = $cmd->getLogicalId();
+			if (!empty($lid)) {
+				$cmdMap[$lid] = $cmd->getId();
+			}
+		}
+		// Déterminer état
+		$stateCmd = $this->getCmd('info', 'state');
+		$stateOn = (is_object($stateCmd) && $stateCmd->execCmd()) ? 'true' : 'false';
+		$cmdJson = json_encode($cmdMap);
+
+		// JS : reconstruire le layout avec les IDs injectés par PHP
 		$js = '<script>'
 			. '(function(){'
 			. 'function build(){'
 			. 'var w=document.querySelector(\'[data-eqlogic_id="' . $eqId . '"]\');'
 			. 'if(!w)return;'
 			. 'if(w.querySelector(".jt-remote"))return;'
-			// Récupérer les IDs des commandes par leur texte
-			. 'var ids={};var count=0;'
-			. 'w.querySelectorAll(".execute").forEach(function(b){'
-			. 'ids[b.textContent.trim()]=b.closest(".cmd").getAttribute("data-cmd_id");count++;'
-			. '});'
-			// Si pas de boutons trouvés, ne rien faire (widget natif reste visible)
-			. 'if(count<2)return;'
-			// Déterminer état
-			. 'var stOn=!!w.querySelector(".icon_green");'
+			// IDs injectés par PHP - pas de parsing de texte
+			. 'var C=' . $cmdJson . ';'
+			// Vérifier qu'il y a des commandes
+			. 'if(!C.on_off&&!C.mute)return;'
+			. 'var stOn=' . $stateOn . ';'
 			. 'var ledC=stOn?"rgb(0,200,100)":"rgb(80,80,80)";'
-			. 'function cmd(id){jeedom.cmd.execute({id:id});}'
-			// Construire le HTML custom
+			. 'function ex(id){jeedom.cmd.execute({id:String(id)});}'
+			// Helpers
+			. 'function btn(id,icon,cls){return \'<div class="jt-btn \'+(cls||"")+\'" data-id="\'+id+\'"><i class="fas \'+icon+\'"></i></div>\';}'
+			. 'function pill(id,icon,txt){return \'<div class="jt-pill" data-id="\'+id+\'"><i class="fas \'+icon+\'"></i> \'+txt+\'</div>\';}'
+			. 'function vblk(idUp,idDown,iconUp,iconDown,lbl){'
+			. 'return \'<div class="jt-vblock">\'+'
+			. '\'<div class="jt-vbtn" data-id="\'+idUp+\'"><i class="fas \'+iconUp+\'"></i></div>\'+'
+			. '\'<div class="jt-vlbl">\'+lbl+\'</div>\'+'
+			. '\'<div class="jt-vbtn" data-id="\'+idDown+\'"><i class="fas \'+iconDown+\'"></i></div>\'+'
+			. '\'</div>\';}'
+			// Construire
 			. 'var h=\'<div class="jt-remote">\';'
-			// LED
 			. 'h+=\'<div class="jt-led" style="background:\'+ledC+\'"></div>\';'
 			// Rangée 1 : Power + Mute + Source
 			. 'h+=\'<div class="jt-row">\';'
-			. 'var pid=ids["MarcheArr\\u00eat"]||ids["Marche/Arr\\u00eat"];'
-			. 'if(pid)h+=\'<div class="jt-btn jt-btn-pwr" data-id="\'+pid+\'"><i class="fas fa-power-off"></i></div>\';'
-			. 'if(ids["Mute"])h+=\'<div class="jt-btn" data-id="\'+ids["Mute"]+\'"><i class="fas fa-volume-mute"></i></div>\';'
-			. 'if(ids["Source"])h+=\'<div class="jt-pill" data-id="\'+ids["Source"]+\'"><i class="fas fa-sign-in-alt"></i> SOURCE</div>\';'
+			. 'if(C.on_off)h+=btn(C.on_off,"fa-power-off","jt-btn-pwr");'
+			. 'if(C.mute)h+=btn(C.mute,"fa-volume-mute");'
+			. 'if(C.source)h+=pill(C.source,"fa-sign-in-alt","SOURCE");'
 			. 'h+=\'</div>\';'
-			// Rangée 2 : VOL block + Extinction + CH block
+			// Rangée 2 : VOL + OFF + CH
 			. 'h+=\'<div class="jt-row">\';'
-			. 'if(ids["Volume +"]&&ids["Volume -"]){'
-			. 'h+=\'<div class="jt-vblock">\';'
-			. 'h+=\'<div class="jt-vbtn" data-id="\'+ids["Volume +"]+\'"><i class="fas fa-plus"></i></div>\';'
-			. 'h+=\'<div class="jt-vlbl">VOL</div>\';'
-			. 'h+=\'<div class="jt-vbtn" data-id="\'+ids["Volume -"]+\'"><i class="fas fa-minus"></i></div>\';'
-			. 'h+=\'</div>\';}'
-			. 'if(ids["Extinction"])h+=\'<div class="jt-btn" data-id="\'+ids["Extinction"]+\'" style="width:36px;height:36px;font-size:13px"><i class="fas fa-stop"></i></div>\';'
-			. 'if(ids["Cha\\u00eene +"]&&ids["Cha\\u00eene -"]){'
-			. 'h+=\'<div class="jt-vblock">\';'
-			. 'h+=\'<div class="jt-vbtn" data-id="\'+ids["Cha\\u00eene +"]+\'"><i class="fas fa-chevron-up"></i></div>\';'
-			. 'h+=\'<div class="jt-vlbl">CH</div>\';'
-			. 'h+=\'<div class="jt-vbtn" data-id="\'+ids["Cha\\u00eene -"]+\'"><i class="fas fa-chevron-down"></i></div>\';'
-			. 'h+=\'</div>\';}'
+			. 'if(C.vol_up&&C.vol_down)h+=vblk(C.vol_up,C.vol_down,"fa-plus","fa-minus","VOL");'
+			. 'if(C.off)h+=btn(C.off,"fa-stop","jt-btn-off");'
+			. 'if(C.ch_up&&C.ch_down)h+=vblk(C.ch_up,C.ch_down,"fa-chevron-up","fa-chevron-down","CH");'
 			. 'h+=\'</div></div>\';'
-			// Cacher les boutons natifs SEULEMENT maintenant
+			// Cacher natifs
 			. 'w.querySelectorAll(".cmds>.action-buttons,.cmds>.cmd.cmd-widget[data-type=info]").forEach(function(el){el.style.display="none";});'
 			// Injecter
 			. 'var cmds=w.querySelector(".cmds");'
 			. 'if(cmds)cmds.insertAdjacentHTML("beforeend",h);'
 			// Bind clicks
 			. 'w.querySelectorAll("[data-id]").forEach(function(el){'
-			. 'el.addEventListener("click",function(){cmd(el.getAttribute("data-id"));});'
+			. 'el.addEventListener("click",function(){ex(el.getAttribute("data-id"));});'
 			. '});'
 			. '}'
-			// Exécuter immédiatement + retry après 500ms (pour chargement AJAX du design)
 			. 'build();setTimeout(build,500);setTimeout(build,1500);'
 			. '})();'
 			. '</script>';
