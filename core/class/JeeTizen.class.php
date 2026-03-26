@@ -36,6 +36,16 @@ class JeeTizen extends eqLogic {
 		['ch_up',    'Chaîne +',     'action', 'other',   1, [], 'CHANNEL_UP', 'fas fa-chevron-up'],
 		['ch_down',  'Chaîne -',     'action', 'other',   1, [], 'CHANNEL_DOWN', 'fas fa-chevron-down'],
 		['source',   'Source',       'action', 'other',   1, [], '', 'fas fa-external-link-alt'],
+		['up',       'Haut',         'action', 'other',   1, [], '', 'fas fa-caret-up'],
+		['down',     'Bas',          'action', 'other',   1, [], '', 'fas fa-caret-down'],
+		['left',     'Gauche',       'action', 'other',   1, [], '', 'fas fa-caret-left'],
+		['right',    'Droite',       'action', 'other',   1, [], '', 'fas fa-caret-right'],
+		['enter',    'OK',           'action', 'other',   1, [], '', 'fas fa-check-circle'],
+		['return',   'Retour',       'action', 'other',   1, [], '', 'fas fa-undo'],
+		['home',     'Home',         'action', 'other',   1, [], '', 'fas fa-home'],
+		['tv',       'TV',           'action', 'other',   1, [], '', 'fas fa-tv'],
+		['hdmi1',    'HDMI 1',       'action', 'other',   0, [], '', 'fas fa-plug'],
+		['hdmi2',    'HDMI 2',       'action', 'other',   0, [], '', 'fas fa-plug'],
 		['state',    'Etat',         'info',   'binary',  1, [], 'ENERGY_STATE', 'fas fa-tv'],
 	];
 
@@ -63,6 +73,31 @@ class JeeTizen extends eqLogic {
 	/*     * *********************Méthodes d'instance************************* */
 
 	public function preInsert() {
+		// Valeurs par défaut pour un nouvel équipement
+		if ($this->getConfiguration('port_tv', '') == '') {
+			$this->setConfiguration('port_tv', '8002');
+		}
+		if ($this->getConfiguration('ssl_tv', '') === '') {
+			$this->setConfiguration('ssl_tv', '1');
+		}
+		if ($this->getConfiguration('scenario_tps_pause', '') == '') {
+			$this->setConfiguration('scenario_tps_pause', '100');
+		}
+		if ($this->getConfiguration('scenario_tps_pause_num', '') == '') {
+			$this->setConfiguration('scenario_tps_pause_num', '500');
+		}
+		if ($this->getConfiguration('modele_tv', '') == '') {
+			$this->setConfiguration('modele_tv', 'tizen');
+		}
+		if ($this->getConfiguration('sub_modele_tv', '') === '') {
+			$this->setConfiguration('sub_modele_tv', '3');
+		}
+		if ($this->getConfiguration('app_tv', '') == '') {
+			$this->setConfiguration('app_tv', 'jeedom.jeetizen.samsung');
+		}
+		if ($this->getConfiguration('widget_template', '') == '') {
+			$this->setConfiguration('widget_template', 'dark');
+		}
 	}
 
 	public function postInsert() {
@@ -210,7 +245,7 @@ class JeeTizen extends eqLogic {
 	}
 
 	/**
-	 * Widget avec style custom - appelle le rendu natif + injecte le CSS
+	 * Widget télécommande Samsung - template sombre ou clair
 	 */
 	public function toHtml($_version = 'dashboard') {
 		$html = parent::toHtml($_version);
@@ -218,66 +253,14 @@ class JeeTizen extends eqLogic {
 			return '';
 		}
 
+		$template = $this->getConfiguration('widget_template', 'dark');
+		if ($template == 'none') {
+			return $html;
+		}
+
 		$eqId = $this->getId();
-		$W = '.eqLogic-widget[data-eqtype="JeeTizen"]';
 
-		$css = '<style>'
-			/* Fond sombre */
-			. $W . '{background:rgb(30,32,44) !important;border:none !important}'
-			/* Nom widget */
-			. $W . ' .widget-name a,' . $W . ' .widget-name span{color:rgb(200,200,210) !important;font-weight:600 !important}'
-			. $W . ' .widget-name .object_name{color:rgb(110,110,130) !important;font-size:0.8em;font-weight:400 !important}'
-			/* Les boutons natifs seront cachés par le JS après reconstruction */
-			/* Container custom */
-			. $W . ' .jt-remote{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 4px}'
-			/* Rangée */
-			. $W . ' .jt-row{display:flex;align-items:center;justify-content:center;gap:10px}'
-			/* Bouton rond simple */
-			. $W . ' .jt-btn{'
-			. 'background:rgb(42,44,58);'
-			. 'border:none;border-radius:50%;'
-			. 'box-shadow:3px 3px 6px rgba(0,0,0,0.4),-2px -2px 5px rgba(60,62,80,0.5);'
-			. 'color:rgb(160,165,200);width:42px;height:42px;'
-			. 'display:inline-flex;align-items:center;justify-content:center;'
-			. 'font-size:16px;cursor:pointer;transition:all .12s;user-select:none}'
-			. $W . ' .jt-btn:hover{color:rgb(200,205,240);box-shadow:4px 4px 8px rgba(0,0,0,0.5),-3px -3px 6px rgba(60,62,80,0.6)}'
-			. $W . ' .jt-btn:active{box-shadow:inset 2px 2px 4px rgba(0,0,0,0.4),inset -2px -2px 4px rgba(60,62,80,0.3)}'
-			/* Power */
-			. $W . ' .jt-btn-pwr{color:rgb(200,70,80)}'
-			. $W . ' .jt-btn-pwr:hover{color:rgb(240,90,100)}'
-			/* OFF petit bouton central */
-			. $W . ' .jt-btn-off{width:36px !important;height:36px !important;font-size:13px !important}'
-			/* Bloc vertical (VOL, CH) */
-			. $W . ' .jt-vblock{'
-			. 'background:rgb(42,44,58);'
-			. 'border-radius:22px;'
-			. 'box-shadow:3px 3px 6px rgba(0,0,0,0.4),-2px -2px 5px rgba(60,62,80,0.5);'
-			. 'display:flex;flex-direction:column;align-items:center;'
-			. 'padding:4px 6px;gap:2px;min-width:48px}'
-			/* Boutons dans un bloc vertical */
-			. $W . ' .jt-vblock .jt-vbtn{'
-			. 'background:none;border:none;color:rgb(160,165,200);'
-			. 'width:40px;height:32px;display:flex;align-items:center;justify-content:center;'
-			. 'font-size:16px;cursor:pointer;transition:color .12s;border-radius:10px}'
-			. $W . ' .jt-vblock .jt-vbtn:hover{color:rgb(220,220,255);background:rgba(255,255,255,0.04)}'
-			. $W . ' .jt-vblock .jt-vbtn:active{background:rgba(0,0,0,0.15)}'
-			/* Label dans bloc */
-			. $W . ' .jt-vblock .jt-vlbl{color:rgb(120,125,160);font-size:9px;font-weight:600;letter-spacing:0.5px;user-select:none}'
-			/* Source pill */
-			. $W . ' .jt-pill{'
-			. 'background:rgb(42,44,58);'
-			. 'border-radius:18px;'
-			. 'box-shadow:3px 3px 6px rgba(0,0,0,0.4),-2px -2px 5px rgba(60,62,80,0.5);'
-			. 'display:inline-flex;align-items:center;gap:6px;'
-			. 'padding:8px 16px;color:rgb(160,165,200);font-size:11px;font-weight:600;letter-spacing:0.5px;'
-			. 'cursor:pointer;transition:all .12s;user-select:none}'
-			. $W . ' .jt-pill:hover{color:rgb(220,220,255)}'
-			. $W . ' .jt-pill:active{box-shadow:inset 2px 2px 4px rgba(0,0,0,0.4),inset -2px -2px 4px rgba(60,62,80,0.3)}'
-			/* LED état */
-			. $W . ' .jt-led{width:6px;height:6px;border-radius:50%;display:inline-block;margin-bottom:2px}'
-			. '</style>';
-
-		// Construire la map logicalId -> cmd_id en PHP
+		// Map logicalId -> cmd_id
 		$cmdMap = array();
 		foreach ($this->getCmd() as $cmd) {
 			$lid = $cmd->getLogicalId();
@@ -285,57 +268,107 @@ class JeeTizen extends eqLogic {
 				$cmdMap[$lid] = $cmd->getId();
 			}
 		}
-		// Déterminer état
 		$stateCmd = $this->getCmd('info', 'state');
 		$stateOn = (is_object($stateCmd) && $stateCmd->execCmd()) ? 'true' : 'false';
 		$cmdJson = json_encode($cmdMap);
+		$isDark = ($template !== 'light') ? 'true' : 'false';
 
-		// JS : reconstruire le layout avec les IDs injectés par PHP
 		$js = '<script>'
 			. '(function(){'
 			. 'function build(){'
 			. 'var w=document.querySelector(\'[data-eqlogic_id="' . $eqId . '"]\');'
-			. 'if(!w)return;'
-			. 'if(w.querySelector(".jt-remote"))return;'
-			// IDs injectés par PHP - pas de parsing de texte
+			. 'if(!w||w.querySelector(".jt-rc"))return;'
 			. 'var C=' . $cmdJson . ';'
-			// Vérifier qu'il y a des commandes
 			. 'if(!C.on_off&&!C.mute)return;'
-			. 'var stOn=' . $stateOn . ';'
+			. 'var dk=' . $isDark . ',stOn=' . $stateOn . ';'
+			// Couleurs thème
+			. 'var bg=dk?"rgb(26,26,26)":"rgb(253,250,240)";'
+			. 'var bdr=dk?"rgb(51,51,51)":"rgb(239,230,213)";'
+			. 'var btnBg=dk?"rgb(51,51,51)":"rgb(230,223,204)";'
+			. 'var btnBdr=dk?"rgb(68,68,68)":"rgb(220,211,188)";'
+			. 'var txtC=dk?"white":"rgb(68,68,68)";'
+			. 'var lblC=dk?"rgb(102,102,102)":"rgb(85,85,68)";'
+			. 'var padBg=dk?"rgb(34,34,34)":"rgb(230,223,204)";'
+			. 'var okBg=dk?"radial-gradient(circle,rgb(68,68,68),rgb(34,34,34))":"rgb(253,250,240)";'
+			. 'var okBdr=dk?"rgb(85,85,85)":"rgb(220,211,188)";'
 			. 'var ledC=stOn?"rgb(0,200,100)":"rgb(80,80,80)";'
+			// Style
+			. 'w.style.cssText="background:"+bg+"!important;border:1px solid "+bdr+"!important;border-radius:24px!important;padding:0!important;overflow:hidden";'
+			// Helper
 			. 'function ex(id){jeedom.cmd.execute({id:String(id)});}'
-			// Helpers
-			. 'function btn(id,icon,cls){return \'<div class="jt-btn \'+(cls||"")+\'" data-id="\'+id+\'"><i class="fas \'+icon+\'"></i></div>\';}'
-			. 'function pill(id,icon,txt){return \'<div class="jt-pill" data-id="\'+id+\'"><i class="fas \'+icon+\'"></i> \'+txt+\'</div>\';}'
-			. 'function vblk(idUp,idDown,iconUp,iconDown,lbl){'
-			. 'return \'<div class="jt-vblock">\'+'
-			. '\'<div class="jt-vbtn" data-id="\'+idUp+\'"><i class="fas \'+iconUp+\'"></i></div>\'+'
-			. '\'<div class="jt-vlbl">\'+lbl+\'</div>\'+'
-			. '\'<div class="jt-vbtn" data-id="\'+idDown+\'"><i class="fas \'+iconDown+\'"></i></div>\'+'
-			. '\'</div>\';}'
+			. 'function B(id,inner,cls,style){'
+			. 'return \'<button class="\'+cls+\'" data-id="\'+id+\'" style="\'+style+\'">\'+inner+\'</button>\';}'
+			// SVGs
+			. 'var svgPwr=\'<svg viewBox="0 0 24 24" style="width:28px;height:28px;stroke:white;fill:none"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.77 0" stroke-width="2.5" stroke-linecap="round"/></svg>\';'
+			. 'var svgSrc=\'<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:\'+txtC+\';stroke-width:2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M11 12h7M15 9l3 3-3 3"/></svg>\';'
+			. 'var svgUp=\'<svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:\'+lblC+\'"><path d="M7 14l5-5 5 5z"/></svg>\';'
+			. 'var svgDn=\'<svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:\'+lblC+\'"><path d="M7 10l5 5 5-5z"/></svg>\';'
+			. 'var svgLt=\'<svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:\'+lblC+\'"><path d="M14 7l-5 5 5 5z"/></svg>\';'
+			. 'var svgRt=\'<svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:\'+lblC+\'"><path d="M10 17l5-5-5-5z"/></svg>\';'
+			. 'var svgMute=\'<svg viewBox="0 0 24 24" style="width:60%;height:60%;fill:\'+txtC+\'"><path d="M5 9v6h4l5 5V4l-5 5H5z"/><line x1="4" y1="4" x2="20" y2="20" stroke="\'+txtC+\'" stroke-width="2"/></svg>\';'
+			. 'var svgRet=\'<svg viewBox="0 0 24 24" style="width:90%;height:24px;fill:\'+txtC+\'"><path d="M12.5 8c-2.6 0-5 1-6.9 2.6L2 7v9h9l-3.6-3.6c1.4-1.2 3.1-1.9 5.1-1.9 3.5 0 6.5 2.3 7.6 5.5l2.4-.8c-1.3-4.1-5.2-7.1-9.9-7.1z"/></svg>\';'
+			. 'var svgHome=\'<svg viewBox="0 0 24 24" style="width:90%;height:24px;fill:\'+txtC+\'"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>\';'
+			// Styles communs
+			. 'var sBtn="background:"+btnBg+";border:1px solid "+btnBdr+";color:"+txtC+";cursor:pointer;display:flex;align-items:center;justify-content:center;";'
+			. 'var sVert=sBtn+"border-radius:15px;width:70px;height:70px;flex-direction:column;padding:0;font-size:14px;";'
+			. 'var sRect=sBtn+"border-radius:12px;height:50px;flex:1;font-weight:bold;flex-direction:column;padding:4px;";'
 			// Construire
-			. 'var h=\'<div class="jt-remote">\';'
-			. 'h+=\'<div class="jt-led" style="background:\'+ledC+\'"></div>\';'
-			// Rangée 1 : Power + Mute + Source
-			. 'h+=\'<div class="jt-row">\';'
-			. 'if(C.on_off)h+=btn(C.on_off,"fa-power-off","jt-btn-pwr");'
-			. 'if(C.mute)h+=btn(C.mute,"fa-volume-mute");'
-			. 'if(C.source)h+=pill(C.source,"fa-sign-in-alt","SOURCE");'
+			. 'var h=\'<div class="jt-rc" style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:14px">\';'
+			// LED
+			. 'h+=\'<div style="width:6px;height:6px;border-radius:50%;background:\'+ledC+\'"></div>\';'
+			// Row 1 : Power + Source
+			. 'h+=\'<div style="display:flex;width:100%;justify-content:space-between;align-items:center">\';'
+			. 'if(C.on_off)h+=\'<button class="jt-x" data-id="\'+C.on_off+\'" style="width:50px;height:50px;border-radius:50%;border:none;cursor:pointer;background:radial-gradient(circle at 35% 35%,rgb(255,51,51),rgb(170,0,0),rgb(102,0,0));display:flex;justify-content:center;align-items:center">\'+svgPwr+\'</button>\';'
+			. 'if(C.source)h+=\'<button class="jt-x" data-id="\'+C.source+\'" style="\'+sBtn+\'width:90px;height:38px;border-radius:10px;font-weight:bold;gap:6px;font-size:11px">\'+svgSrc+\' SOURCE</button>\';'
 			. 'h+=\'</div>\';'
-			// Rangée 2 : VOL + OFF + CH
-			. 'h+=\'<div class="jt-row">\';'
-			. 'if(C.vol_up&&C.vol_down)h+=vblk(C.vol_up,C.vol_down,"fa-plus","fa-minus","VOL");'
-			. 'if(C.off)h+=btn(C.off,"fa-stop","jt-btn-off");'
-			. 'if(C.ch_up&&C.ch_down)h+=vblk(C.ch_up,C.ch_down,"fa-chevron-up","fa-chevron-down","CH");'
-			. 'h+=\'</div></div>\';'
-			// Cacher natifs
+			// PAD navigation
+			. 'if(C.up&&C.down&&C.left&&C.right&&C.enter){'
+			. 'h+=\'<div style="position:relative;width:160px;height:160px;border-radius:50%;background:\'+padBg+\';overflow:hidden;box-shadow:inset 0 0 15px rgba(0,0,0,\'+(dk?0.5:0.05)+\')">\';'
+			. 'var aS="position:absolute;width:100%;height:100%;top:0;left:0;background:transparent;border:none;cursor:pointer;padding:0;z-index:2;";'
+			. 'var svgS="pointer-events:none;position:absolute;";'
+			. 'h+=\'<button class="jt-x" data-id="\'+C.up+\'" style="\'+aS+\'clip-path:polygon(50% 50%,0% 0%,100% 0%)"><div style="\'+svgS+\'top:10px;left:50%;transform:translateX(-50%)">\'+svgUp+\'</div></button>\';'
+			. 'h+=\'<button class="jt-x" data-id="\'+C.down+\'" style="\'+aS+\'clip-path:polygon(50% 50%,0% 100%,100% 100%)"><div style="\'+svgS+\'bottom:10px;left:50%;transform:translateX(-50%)">\'+svgDn+\'</div></button>\';'
+			. 'h+=\'<button class="jt-x" data-id="\'+C.left+\'" style="\'+aS+\'clip-path:polygon(50% 50%,0% 0%,0% 100%)"><div style="\'+svgS+\'left:10px;top:50%;transform:translateY(-50%)">\'+svgLt+\'</div></button>\';'
+			. 'h+=\'<button class="jt-x" data-id="\'+C.right+\'" style="\'+aS+\'clip-path:polygon(50% 50%,100% 0%,100% 100%)"><div style="\'+svgS+\'right:10px;top:50%;transform:translateY(-50%)">\'+svgRt+\'</div></button>\';'
+			. 'h+=\'<button class="jt-x" data-id="\'+C.enter+\'" style="position:absolute;top:50%;left:50%;width:60px;height:60px;transform:translate(-50%,-50%);border-radius:50%;background:\'+okBg+\';border:1px solid \'+okBdr+\';color:\'+txtC+\';font-weight:bold;font-size:16px;z-index:10;cursor:pointer;display:flex;justify-content:center;align-items:center">OK</button>\';'
+			. 'h+=\'</div>\';}'
+			// VOL + MUTE + CH
+			. 'h+=\'<div style="display:flex;width:100%;justify-content:center;gap:8px;align-items:center">\';'
+			. 'if(C.vol_up&&C.vol_down){'
+			. 'h+=\'<div style="display:flex;flex-direction:column;gap:8px">\';'
+			. 'h+=\'<button class="jt-x" data-id="\'+C.vol_up+\'" style="\'+sVert+\'"><b style="font-size:22px">+</b><span style="font-size:11px;font-weight:bold">VOL</span></button>\';'
+			. 'h+=\'<button class="jt-x" data-id="\'+C.vol_down+\'" style="\'+sVert+\'"><span style="font-size:11px;font-weight:bold">VOL</span><b style="font-size:22px">-</b></button>\';'
+			. 'h+=\'</div>\';}'
+			. 'if(C.mute)h+=\'<button class="jt-x" data-id="\'+C.mute+\'" style="\'+sBtn+\'width:55px;height:55px;border-radius:50%">\'+svgMute+\'</button>\';'
+			. 'if(C.ch_up&&C.ch_down){'
+			. 'h+=\'<div style="display:flex;flex-direction:column;gap:8px">\';'
+			. 'h+=\'<button class="jt-x" data-id="\'+C.ch_up+\'" style="\'+sVert+\'"><b style="font-size:18px">▲</b><span style="font-size:11px;font-weight:bold">CH</span></button>\';'
+			. 'h+=\'<button class="jt-x" data-id="\'+C.ch_down+\'" style="\'+sVert+\'"><span style="font-size:11px;font-weight:bold">CH</span><b style="font-size:18px">▼</b></button>\';'
+			. 'h+=\'</div>\';}'
+			. 'h+=\'</div>\';'
+			// RETOUR + HOME
+			. 'h+=\'<div style="display:flex;width:100%;gap:10px">\';'
+			. 'if(C["return"])h+=\'<button class="jt-x" data-id="\'+C["return"]+\'" style="\'+sRect+\'">\'+svgRet+\'<span style="font-size:11px">RETOUR</span></button>\';'
+			. 'if(C.home)h+=\'<button class="jt-x" data-id="\'+C.home+\'" style="\'+sRect+\'">\'+svgHome+\'<span style="font-size:11px">HOME</span></button>\';'
+			. 'h+=\'</div>\';'
+			// TV + HDMI
+			. 'h+=\'<div style="display:flex;width:100%;gap:8px">\';'
+			. 'if(C.tv)h+=\'<button class="jt-x" data-id="\'+C.tv+\'" style="\'+sRect+\'font-size:12px">TV</button>\';'
+			. 'if(C.hdmi1)h+=\'<button class="jt-x" data-id="\'+C.hdmi1+\'" style="\'+sRect+\'font-size:12px">HDMI 1</button>\';'
+			. 'if(C.hdmi2)h+=\'<button class="jt-x" data-id="\'+C.hdmi2+\'" style="\'+sRect+\'font-size:12px">HDMI 2</button>\';'
+			. 'h+=\'</div>\';'
+			. 'h+=\'</div>\';'
+			// Cacher natifs + injecter
 			. 'w.querySelectorAll(".cmds>.action-buttons,.cmds>.cmd.cmd-widget[data-type=info]").forEach(function(el){el.style.display="none";});'
-			// Injecter
 			. 'var cmds=w.querySelector(".cmds");'
 			. 'if(cmds)cmds.insertAdjacentHTML("beforeend",h);'
-			// Bind clicks
-			. 'w.querySelectorAll("[data-id]").forEach(function(el){'
+			// Active effect
+			. 'w.querySelectorAll(".jt-x").forEach(function(el){'
 			. 'el.addEventListener("click",function(){ex(el.getAttribute("data-id"));});'
+			. 'el.style.transition="filter 0.1s";'
+			. 'el.addEventListener("mousedown",function(){el.style.filter="brightness(1.4)";});'
+			. 'el.addEventListener("mouseup",function(){el.style.filter="";});'
+			. 'el.addEventListener("mouseleave",function(){el.style.filter="";});'
 			. '});'
 			. '}'
 			. 'build();setTimeout(build,500);setTimeout(build,1500);'
@@ -344,7 +377,9 @@ class JeeTizen extends eqLogic {
 
 		$pos = strpos($html, '>');
 		if ($pos !== false) {
-			$html = substr($html, 0, $pos + 1) . $css . substr($html, $pos + 1);
+			// Cacher widget-name natif si template actif
+			$hideStyle = '<style>[data-eqlogic_id="' . $eqId . '"] .widget-name{color:' . ($template == 'light' ? 'rgb(68,68,68)' : 'rgb(200,200,210)') . ' !important}[data-eqlogic_id="' . $eqId . '"] .widget-name a{color:inherit !important}[data-eqlogic_id="' . $eqId . '"] .widget-name .object_name{color:' . ($template == 'light' ? 'rgb(140,140,140)' : 'rgb(110,110,130)') . ' !important;font-size:0.8em}</style>';
+			$html = substr($html, 0, $pos + 1) . $hideStyle . substr($html, $pos + 1);
 		}
 
 		return $html . $js;
@@ -377,6 +412,16 @@ class JeeTizenCmd extends cmd {
 		'ch_up'    => 'KEY_CHUP',
 		'ch_down'  => 'KEY_CHDOWN',
 		'source'   => 'KEY_SOURCE',
+		'up'       => 'KEY_UP',
+		'down'     => 'KEY_DOWN',
+		'left'     => 'KEY_LEFT',
+		'right'    => 'KEY_RIGHT',
+		'enter'    => 'KEY_ENTER',
+		'return'   => 'KEY_RETURN',
+		'home'     => 'KEY_HOME',
+		'tv'       => 'KEY_TV',
+		'hdmi1'    => 'KEY_HDMI1',
+		'hdmi2'    => 'KEY_HDMI2',
 	];
 
 	/*     * ***********************Methode static*************************** */

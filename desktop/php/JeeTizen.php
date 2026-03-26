@@ -247,6 +247,20 @@ $eqLogics = eqLogic::byType($plugin->getId());
 								</div>
 							</div>
 
+							<legend><i class="fas fa-palette"></i> {{Widget télécommande}}</legend>
+							<div class="form-group">
+								<label class="col-sm-4 control-label">{{Template}}
+									<sup><i class="fas fa-question-circle tooltips" title="{{Choisir le style de la télécommande sur le dashboard et le design. 'Aucun' affiche les boutons Jeedom standards.}}"></i></sup>
+								</label>
+								<div class="col-sm-6">
+									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="widget_template">
+										<option value="dark">{{Sombre}}</option>
+										<option value="light">{{Clair}}</option>
+										<option value="none">{{Aucun (standard Jeedom)}}</option>
+									</select>
+								</div>
+							</div>
+
 							<legend><i class="fas fa-info"></i> {{Informations}}</legend>
 							<div class="form-group">
 								<label class="col-sm-4 control-label">{{Description}}</label>
