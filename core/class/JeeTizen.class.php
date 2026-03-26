@@ -222,57 +222,72 @@ class JeeTizen extends eqLogic {
 		$W = '.eqLogic-widget[data-eqtype="JeeTizen"]';
 
 		$css = '<style>'
-			/* Fond sombre tuile */
-			. $W . '{background:linear-gradient(145deg,rgb(26,26,46),rgb(22,33,62)) !important;border:none !important}'
-			/* Nom widget blanc */
-			. $W . ' .widget-name a,' . $W . ' .widget-name span{color:rgb(220,220,220) !important}'
-			. $W . ' .widget-name .object_name{color:rgb(140,140,140) !important;font-size:0.8em}'
+			/* Fond clair neumorphique */
+			. $W . '{background:rgb(235,238,245) !important;border:none !important;box-shadow:8px 8px 16px rgba(0,0,0,0.08),-8px -8px 16px rgba(255,255,255,0.9) !important}'
+			/* Nom widget */
+			. $W . ' .widget-name a,' . $W . ' .widget-name span{color:rgb(60,60,80) !important;font-weight:600 !important}'
+			. $W . ' .widget-name .object_name{color:rgb(140,140,160) !important;font-size:0.8em;font-weight:400 !important}'
 			/* Conteneur */
-			. $W . ' .cmds{padding:4px}'
+			. $W . ' .cmds{padding:6px 4px}'
 			/* Grille boutons */
-			. $W . ' .action-buttons{display:flex !important;flex-wrap:wrap;justify-content:center;gap:5px;padding:4px 0}'
+			. $W . ' .action-buttons{display:flex !important;flex-wrap:wrap;justify-content:center;gap:8px;padding:4px 0}'
 			/* Commandes */
 			. $W . ' .cmd.cmd-widget{margin:0 !important}'
-			/* Boutons sombres */
+			/* Boutons neumorphiques ronds */
 			. $W . ' .cmd.cmd-widget .execute{'
-			. 'background:linear-gradient(145deg,rgb(42,42,74),rgb(30,30,58)) !important;'
-			. 'border:1px solid rgba(255,255,255,0.06) !important;'
-			. 'border-radius:10px !important;'
-			. 'color:rgb(200,200,200) !important;'
-			. 'min-width:48px !important;min-height:44px !important;'
-			. 'padding:6px 8px !important;font-size:16px !important;'
+			. 'background:rgb(235,238,245) !important;'
+			. 'border:none !important;'
+			. 'border-radius:14px !important;'
+			. 'box-shadow:4px 4px 8px rgba(0,0,0,0.1),-4px -4px 8px rgba(255,255,255,0.95) !important;'
+			. 'color:rgb(88,80,160) !important;'
+			. 'width:48px !important;height:48px !important;'
+			. 'padding:0 !important;font-size:18px !important;'
 			. 'display:inline-flex !important;align-items:center !important;justify-content:center !important;'
 			. 'transition:all .15s !important;text-shadow:none !important}'
 			/* Hover */
 			. $W . ' .cmd.cmd-widget .execute:hover{'
-			. 'background:linear-gradient(145deg,rgb(58,58,90),rgb(46,46,74)) !important;'
-			. 'color:rgb(255,255,255) !important;transform:scale(1.05)}'
-			/* Clic */
+			. 'box-shadow:6px 6px 12px rgba(0,0,0,0.12),-6px -6px 12px rgba(255,255,255,1) !important;'
+			. 'color:rgb(70,60,140) !important}'
+			/* Clic enfoncé */
 			. $W . ' .cmd.cmd-widget .execute:active{'
-			. 'transform:scale(0.92) !important;'
-			. 'background:linear-gradient(145deg,rgb(26,26,58),rgb(21,21,48)) !important}'
-			/* Power en rouge */
-			. $W . ' .cmd.cmd-widget .execute .fa-power-off{color:rgb(255,82,82) !important}'
-			/* Source en cyan */
-			. $W . ' .cmd.cmd-widget .execute .fa-external-link-alt{color:rgb(128,203,196) !important}'
+			. 'box-shadow:inset 3px 3px 6px rgba(0,0,0,0.1),inset -3px -3px 6px rgba(255,255,255,0.7) !important;'
+			. 'color:rgb(88,80,160) !important}'
+			/* Power en rouge-rose */
+			. $W . ' .cmd.cmd-widget .execute .fa-power-off{color:rgb(180,60,80) !important}'
+			/* Source style pill */
+			. $W . ' .cmd.cmd-widget .jt-source{'
+			. 'border-radius:20px !important;width:auto !important;padding:0 14px !important;gap:6px}'
 			/* Info état */
-			. $W . ' .cmd.cmd-widget[data-type="info"]{display:block !important;margin:4px auto !important}'
-			. $W . ' .cmd.cmd-widget[data-type="info"] .cmdName{color:rgb(160,160,160) !important;font-size:10px}'
-			. $W . ' .cmd.cmd-widget[data-type="info"] .iconCmd .icon_green{color:rgb(0,230,118) !important;text-shadow:0 0 8px rgba(0,230,118,0.6)}'
-			. $W . ' .cmd.cmd-widget[data-type="info"] .iconCmd .icon_red{color:rgb(255,82,82) !important}'
+			. $W . ' .cmd.cmd-widget[data-type="info"]{display:block !important;margin:6px auto !important}'
+			. $W . ' .cmd.cmd-widget[data-type="info"] .cmdName{color:rgb(140,140,160) !important;font-size:10px}'
+			. $W . ' .cmd.cmd-widget[data-type="info"] .iconCmd .icon_green{color:rgb(88,80,160) !important}'
+			. $W . ' .cmd.cmd-widget[data-type="info"] .iconCmd .icon_red{color:rgb(180,60,80) !important}'
 			. '</style>';
 
-		// JS pour remplacer le texte des boutons par des icônes
+		// JS : remplacer texte par icônes + ajouter classe source
 		$js = '<script>'
 			. '(function(){'
 			. 'var w=document.querySelector(\'[data-eqlogic_id="' . $eqId . '"]\');'
 			. 'if(!w)return;'
-			. 'var map={"MarcheArr\\u00eat":"fa-power-off","Marche/Arr\\u00eat":"fa-power-off","Extinction":"fa-stop","Mute":"fa-volume-mute","Volume +":"fa-volume-up","Volume -":"fa-volume-down","Cha\\u00eene +":"fa-chevron-up","Cha\\u00eene -":"fa-chevron-down","Source":"fa-external-link-alt"};'
+			. 'var map={'
+			. '"MarcheArr\\u00eat":["fa-power-off",""],'
+			. '"Marche/Arr\\u00eat":["fa-power-off",""],'
+			. '"Extinction":["fa-stop-circle",""],'
+			. '"Mute":["fa-volume-mute",""],'
+			. '"Volume +":["fa-volume-up",""],'
+			. '"Volume -":["fa-volume-down",""],'
+			. '"Cha\\u00eene +":["fa-chevron-up",""],'
+			. '"Cha\\u00eene -":["fa-chevron-down",""],'
+			. '"Source":["fa-sign-in-alt","jt-source"]'
+			. '};'
 			. 'w.querySelectorAll(".execute").forEach(function(btn){'
 			. 'var t=btn.textContent.trim();'
 			. 'for(var k in map){'
-			. 'if(t===k){btn.innerHTML=\'<i class="fas \'+map[k]+\'"></i>\';break;}'
-			. '}'
+			. 'if(t===k){'
+			. 'btn.innerHTML=\'<i class="fas \'+map[k][0]+\'"></i>\';'
+			. 'if(map[k][1])btn.classList.add(map[k][1]);'
+			. 'break;'
+			. '}}'
 			. '});'
 			. '})();'
 			. '</script>';
