@@ -505,9 +505,6 @@ class JeeTizen extends eqLogic {
 			. '<a href="' . $eqLink . '" style="font-size:1.1em;">' . htmlspecialchars($name) . '</a>'
 			. '</center>';
 
-		// Modale: contenu caché dans un div
-		$html .= '<div id="md_modal_jt_' . $eqId . '" style="display:none;">' . $r . '</div>';
-
 		// LED état
 		$html .= '<div style="text-align:center;margin:2px 0;">'
 			. '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' . $ledColor . '"></span>'
@@ -516,31 +513,38 @@ class JeeTizen extends eqLogic {
 		$eid = (int)$eqId;
 		$dialogWidth = (int)round(280*$ratio+40);
 
-		// Image cliquable avec TOUT le JS dans le onclick (pas de <script>)
+		// Encoder le HTML de la télécommande en base64 pour le stocker dans un data-attribute
+		$remoteB64 = base64_encode($r);
+
+		// Image cliquable : au clic, nettoyer les anciens résidus, créer la modale dans <body>, ouvrir
 		$html .= '<img src="plugins/JeeTizen/core/template/widget/samsung_tizen.png" '
 			. 'style="max-width:100%;max-height:100%;cursor:pointer;display:block;margin:0 auto;" '
+			. 'data-remote="' . $remoteB64 . '" '
 			. 'onclick="'
-			. 'var m=jQuery(\'#md_modal_jt_' . $eid . '\');'
-			// Détruire la modale si elle existe déjà (navigation dashboard↔design)
-			. 'if(m.hasClass(\'ui-dialog-content\')){try{m.dialog(\'destroy\');}catch(e){}}'
-			// (Re)créer la modale
-			. 'm.dialog({'
-			.   'modal:true,autoOpen:false,'
+			// Nettoyer tout ancien résidu de modale pour cet eqId
+			. 'jQuery(\'.jt-dlg-' . $eid . '\').remove();'
+			// Créer un nouveau div dans le body
+			. 'var d=jQuery(\'<div class=&quot;jt-dlg-' . $eid . '&quot;></div>\');'
+			. 'jQuery(\'body\').append(d);'
+			// Décoder le HTML base64 et l injecter
+			. 'd.html(atob(this.getAttribute(\'data-remote\')));'
+			// Créer et ouvrir la modale
+			. 'd.dialog({'
+			.   'modal:true,'
 			.   'title:\'' . addslashes($name) . '\','
 			.   'width:' . $dialogWidth . ',resizable:false,'
 			.   'position:{my:\'center\',at:\'center\',of:window},'
+			.   'close:function(){jQuery(this).dialog(\'destroy\').remove();},'
 			.   'open:function(){'
 			.     'var s=this;'
 			.     'setTimeout(function(){'
-			.       'var rm=document.getElementById(\'jt-remote-' . $eid . '\');'
-			.       'if(rm)rm.style.zoom=\'' . $scale . '%\';'
+			.       'jQuery(s).find(\'[id^=jt-remote]\').css(\'zoom\',\'' . $scale . '%\');'
 			.       'jQuery(s).css({overflow:\'visible\',padding:\'0\',background:\'transparent\',border:\'none\'});'
 			.       'jQuery(s).closest(\'.ui-dialog\').find(\'*\').css(\'overflow\',\'visible\');'
 			.       'jQuery(s).closest(\'.ui-dialog\').css({background:\'transparent\',border:\'none\',boxShadow:\'none\'});'
 			.     '},50);'
 			.   '}'
 			. '});'
-			. 'm.dialog(\'open\');'
 			. '"/>';
 
 		// CSS directement dans le HTML (pas de JS)
