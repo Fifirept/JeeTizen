@@ -506,66 +506,49 @@ class JeeTizen extends eqLogic {
 			. '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' . $ledColor . '"></span>'
 			. '</div>';
 		$html .= '<img class="jt-tv-img-' . $eqId . '" src="plugins/JeeTizen/core/template/widget/samsung_tizen.png" '
-			. 'style="max-width:100%;max-height:100%;cursor:pointer;display:block;margin:0 auto;"/>';
+			. 'style="max-width:100%;max-height:100%;cursor:pointer;display:block;margin:0 auto;" '
+			. 'onclick="jtOpen' . $eid . '()"/>';
 
 		$eid = (int)$eqId;
 
-		// CSS directement dans le HTML (disponible immédiatement, pas de race condition)
+		// CSS directement dans le HTML
 		$html .= '<style id="' . $styleId . '">' . $css . '</style>';
 
+		// Script : fonction globale nommée (fonctionne en dashboard ET design)
 		$html .= '<script>'
-			. '(function(){'
-
-			// Modale jQuery UI
-			. 'var $m=$("#md_modal_jt_' . $eid . '");'
-			. '$m.dialog({'
-			.   'modal:true,autoOpen:false,title:"' . addslashes($name) . '",'
-			.   'width:'.(int)round(280*$ratio+40).',resizable:false,'
-			.   'position:{my:"center",at:"center",of:window},'
-			.   'open:function(){'
-			.     'var self=this;'
-			// Petit délai pour laisser le navigateur calculer le layout de la modale
-			.     'setTimeout(function(){'
-			// Appliquer le scale zoom sur #jt-remote uniquement a l ouverture de la modale
-			.       'var rm=document.getElementById("jt-remote-' . $eid . '");'
-			.       'if(rm)rm.style.zoom="' . $scale . '%";'
-			// Forcer overflow:visible + fond transparent sur la chaine jQuery UI
-			.       '$(self).css({overflow:"visible",padding:"0",background:"transparent",border:"none"});'
-			.       '$(self).closest(".ui-dialog").find("*").css("overflow","visible");'
-			.       '$(self).closest(".ui-dialog").css({background:"transparent",border:"none",boxShadow:"none"});'
-			.       'jtPad' . $eid . '();'
-			.     '},50);'
+			// Fonction globale d'ouverture de la modale
+			. 'function jtOpen' . $eid . '(){'
+			.   'var $m=$("#md_modal_jt_' . $eid . '");'
+			// Initialiser la modale si pas encore fait
+			.   'if(!$m.hasClass("ui-dialog-content")){'
+			.     '$m.dialog({'
+			.       'modal:true,autoOpen:false,title:"' . addslashes($name) . '",'
+			.       'width:'.(int)round(280*$ratio+40).',resizable:false,'
+			.       'position:{my:"center",at:"center",of:window},'
+			.       'open:function(){'
+			.         'var self=this;'
+			.         'setTimeout(function(){'
+			.           'var rm=document.getElementById("jt-remote-' . $eid . '");'
+			.           'if(rm)rm.style.zoom="' . $scale . '%";'
+			.           '$(self).css({overflow:"visible",padding:"0",background:"transparent",border:"none"});'
+			.           '$(self).closest(".ui-dialog").find("*").css("overflow","visible");'
+			.           '$(self).closest(".ui-dialog").css({background:"transparent",border:"none",boxShadow:"none"});'
+			.           'jtPadInit' . $eid . '();'
+			.         '},50);'
+			.       '}'
+			.     '});'
 			.   '}'
-			. '});'
-
-			// Clic image → ouvre modale
-			. '$(".jt-tv-img-' . $eid . '").off("click.jt' . $eid . '").on("click.jt' . $eid . '",function(){'
 			.   '$m.dialog("open");'
-			. '});'
+			. '}'
 
-			// Clics sur <button> standards
-			. '$(document).off("click.jtb' . $eid . '").on("click.jtb' . $eid . '",'
-			.   '"#jt-remote-' . $eid . ' button[data-id]",function(e){'
-			.   'e.stopPropagation();var cid=$(this).data("id");'
-			.   'if(cid&&cid!="")jeedom.cmd.execute({id:cid});'
-			. '});'
-
-			// Clics sur <div role=button> (ok, btn-power, btn-mute)
-			. '$(document).off("click.jtd' . $eid . '").on("click.jtd' . $eid . '",'
-			.   '"#jt-remote-' . $eid . ' div[role=button][data-id]",function(e){'
-			.   'e.stopPropagation();var cid=$(this).data("id");'
-			.   'if(cid&&cid!="")jeedom.cmd.execute({id:cid});'
-			. '});'
-
-			// Init canvas pad
-			. 'function jtPad' . $eid . '(){'
+			// Fonction globale init pad canvas
+			. 'function jtPadInit' . $eid . '(){'
 			.   'var wrap=document.querySelector("#jt-remote-' . $eid . ' .pad-wrap");'
 			.   'if(!wrap)return;'
 			.   'var cv=wrap.querySelector(".pad-canvas");'
-			.   'var ctx=cv.getContext("2d");'
-			// N'attacher le listener click qu'une seule fois
-			.   'if(!cv._jtClick){'
+			.   'if(!cv||cv._jtClick)return;'
 			.   'cv._jtClick=true;'
+			.   'var ctx=cv.getContext("2d");'
 			.   'cv.addEventListener("click",function(e){'
 			.     'var r=cv.getBoundingClientRect();'
 			.     'var sx=cv.width/r.width,sy=cv.height/r.height;'
@@ -585,9 +568,20 @@ class JeeTizen extends eqLogic {
 			.     'setTimeout(function(){ctx.clearRect(0,0,210,210);},200);'
 			.     'if(cid&&cid!="")jeedom.cmd.execute({id:cid});'
 			.   '});'
-			.   '}' // fin if !cv._jtClick
 			. '}'
-			. '})();</script>';
+
+			// Clics sur boutons de la télécommande (délégation sur document — fonctionne toujours)
+			. '$(document).off("click.jtb' . $eid . '").on("click.jtb' . $eid . '",'
+			.   '"#jt-remote-' . $eid . ' button[data-id]",function(e){'
+			.   'e.stopPropagation();var cid=$(this).data("id");'
+			.   'if(cid&&cid!="")jeedom.cmd.execute({id:cid});'
+			. '});'
+			. '$(document).off("click.jtd' . $eid . '").on("click.jtd' . $eid . '",'
+			.   '"#jt-remote-' . $eid . ' div[role=button][data-id]",function(e){'
+			.   'e.stopPropagation();var cid=$(this).data("id");'
+			.   'if(cid&&cid!="")jeedom.cmd.execute({id:cid});'
+			. '});'
+			. '</script>';
 
 		$html .= '</div>';
 		return $html;
