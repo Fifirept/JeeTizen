@@ -364,7 +364,7 @@ class JeeTizen extends eqLogic {
 			// Boutons VOL/CH
 			. '#jt-remote-' . $eqId . ' .btn-vert{'
 			.   'background:' . $btn . ' !important;border:1px solid ' . $bord . ';color:' . $txt . ';'
-			.   'border-radius:12px !important;width:82px;height:82px;cursor:pointer;'
+			.   'border-radius:12px !important;width:62px;height:82px;cursor:pointer;'
 			.   'display:flex;flex-direction:column;align-items:center;justify-content:center;'
 			.   'padding:0;gap:4px;box-shadow:0 2px 8px rgba(0,0,0,0.4);'
 			. '}'
@@ -372,7 +372,7 @@ class JeeTizen extends eqLogic {
 			. '#jt-remote-' . $eqId . ' .btn-vert span{font-size:13px;font-weight:700;color:' . $txt . ';line-height:1;}'
 			// Bouton MUTE — aussi un <div role=button>
 			. '#jt-remote-' . $eqId . ' .btn-mute{'
-			.   'width:62px;height:62px;min-width:62px;border-radius:50%;'
+			.   'width:42px;height:42px;min-width:42px;border-radius:50%;'
 			.   'background:radial-gradient(circle at 40% 35%,' . $mg1 . ',' . $mg2 . ');'
 			.   'border:1px solid ' . $mb . ';cursor:pointer;'
 			.   'display:flex;justify-content:center;align-items:center;'
