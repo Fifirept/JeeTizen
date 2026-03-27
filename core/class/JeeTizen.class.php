@@ -27,16 +27,26 @@ class JeeTizen extends eqLogic {
 	/*     * *************************Attributs****************************** */
 
 	const DEFAULT_COMMANDS = [
-		// [logicalId, nom, type, subType, isVisible, config]
-		['on_off',   'Marche/Arrêt', 'action', 'other',   1, []],
-		['off',      'Extinction',   'action', 'other',   1, []],
-		['mute',     'Mute',         'action', 'other',   1, []],
-		['vol_up',   'Volume +',     'action', 'other',   1, []],
-		['vol_down', 'Volume -',     'action', 'other',   1, []],
-		['ch_up',    'Chaîne +',     'action', 'other',   1, []],
-		['ch_down',  'Chaîne -',     'action', 'other',   1, []],
-		['source',   'Source',       'action', 'other',   1, []],
-		['state',    'Etat',         'info',   'binary',  1, []],
+		// [logicalId, nom, type, subType, isVisible, config, genericType, icon]
+		['on_off',   'Marche/Arrêt', 'action', 'other',   1, [], 'ENERGY_ON', 'fas fa-power-off'],
+		['off',      'Extinction',   'action', 'other',   0, [], 'ENERGY_OFF', 'fas fa-stop'],
+		['mute',     'Mute',         'action', 'other',   1, [], 'VOLUME_MUTE', 'fas fa-volume-mute'],
+		['vol_up',   'Volume +',     'action', 'other',   1, [], 'VOLUME_UP', 'fas fa-volume-up'],
+		['vol_down', 'Volume -',     'action', 'other',   1, [], 'VOLUME_DOWN', 'fas fa-volume-down'],
+		['ch_up',    'Chaîne +',     'action', 'other',   1, [], 'CHANNEL_UP', 'fas fa-chevron-up'],
+		['ch_down',  'Chaîne -',     'action', 'other',   1, [], 'CHANNEL_DOWN', 'fas fa-chevron-down'],
+		['source',   'Source',       'action', 'other',   1, [], '', 'fas fa-external-link-alt'],
+		['up',       'Haut',         'action', 'other',   1, [], '', 'fas fa-caret-up'],
+		['down',     'Bas',          'action', 'other',   1, [], '', 'fas fa-caret-down'],
+		['left',     'Gauche',       'action', 'other',   1, [], '', 'fas fa-caret-left'],
+		['right',    'Droite',       'action', 'other',   1, [], '', 'fas fa-caret-right'],
+		['enter',    'OK',           'action', 'other',   1, [], '', 'fas fa-check-circle'],
+		['return',   'Retour',       'action', 'other',   1, [], '', 'fas fa-undo'],
+		['home',     'Home',         'action', 'other',   1, [], '', 'fas fa-home'],
+		['tv',       'TV',           'action', 'other',   1, [], '', 'fas fa-tv'],
+		['hdmi1',    'HDMI 1',       'action', 'other',   0, [], '', 'fas fa-plug'],
+		['hdmi2',    'HDMI 2',       'action', 'other',   0, [], '', 'fas fa-plug'],
+		['state',    'Etat',         'info',   'binary',  1, [], 'ENERGY_STATE', 'fas fa-tv'],
 	];
 
 	/*     * ***********************Methode static*************************** */
@@ -63,6 +73,31 @@ class JeeTizen extends eqLogic {
 	/*     * *********************Méthodes d'instance************************* */
 
 	public function preInsert() {
+		// Valeurs par défaut pour un nouvel équipement
+		if ($this->getConfiguration('port_tv', '') == '') {
+			$this->setConfiguration('port_tv', '8002');
+		}
+		if ($this->getConfiguration('ssl_tv', '') === '') {
+			$this->setConfiguration('ssl_tv', '1');
+		}
+		if ($this->getConfiguration('scenario_tps_pause', '') == '') {
+			$this->setConfiguration('scenario_tps_pause', '100');
+		}
+		if ($this->getConfiguration('scenario_tps_pause_num', '') == '') {
+			$this->setConfiguration('scenario_tps_pause_num', '500');
+		}
+		if ($this->getConfiguration('modele_tv', '') == '') {
+			$this->setConfiguration('modele_tv', 'tizen');
+		}
+		if ($this->getConfiguration('sub_modele_tv', '') === '') {
+			$this->setConfiguration('sub_modele_tv', '3');
+		}
+		if ($this->getConfiguration('app_tv', '') == '') {
+			$this->setConfiguration('app_tv', 'jeedom.jeetizen.samsung');
+		}
+		if ($this->getConfiguration('widget_template', '') == '') {
+			$this->setConfiguration('widget_template', 'dark');
+		}
 	}
 
 	public function postInsert() {
@@ -148,10 +183,19 @@ class JeeTizen extends eqLogic {
 	}
 
 	public function postSave() {
-		foreach (self::DEFAULT_COMMANDS as [$logicalId, $name, $type, $subType, $isVisible, $config]) {
+		foreach (self::DEFAULT_COMMANDS as $cmdDef) {
+			$logicalId  = $cmdDef[0];
+			$name       = $cmdDef[1];
+			$type       = $cmdDef[2];
+			$subType    = $cmdDef[3];
+			$isVisible  = $cmdDef[4];
+			$config     = $cmdDef[5];
+			$genericType = isset($cmdDef[6]) ? $cmdDef[6] : '';
+			$icon       = isset($cmdDef[7]) ? $cmdDef[7] : '';
+
 			// Chercher par logicalId d'abord
 			$cmd = $this->getCmd($type, $logicalId);
-			// Chercher aussi par nom (migration depuis ancienne version)
+			// Chercher aussi sans filtre type (migration)
 			if (!is_object($cmd)) {
 				$cmd = $this->getCmd(null, $logicalId);
 			}
@@ -159,7 +203,6 @@ class JeeTizen extends eqLogic {
 				// Vérifier qu'une commande avec ce nom n'existe pas déjà
 				foreach ($this->getCmd() as $existingCmd) {
 					if ($existingCmd->getName() == $name) {
-						// Mettre à jour le logicalId de la commande existante
 						$existingCmd->setLogicalId($logicalId);
 						$existingCmd->setType($type);
 						$existingCmd->setSubType($subType);
@@ -178,6 +221,12 @@ class JeeTizen extends eqLogic {
 					$cmd->setType($type);
 					$cmd->setSubType($subType);
 					$cmd->setIsVisible($isVisible);
+					if (!empty($genericType)) {
+						$cmd->setGeneric_type($genericType);
+					}
+					if (!empty($icon)) {
+						$cmd->setDisplay('icon', '<i class="' . $icon . '"></i>');
+					}
 					foreach ($config as $k => $v) {
 						$cmd->setConfiguration($k, $v);
 					}
@@ -196,6 +245,350 @@ class JeeTizen extends eqLogic {
 	}
 
 	/**
+	 * Widget télécommande Samsung
+	 * - "none" : widget natif Jeedom avec icônes 2x plus grosses
+	 * - "dark"/"light" : image PNG cliquable → modale avec télécommande HTML
+	 */
+	public function toHtml($_version = 'dashboard') {
+		$template = $this->getConfiguration('widget_template', 'dark');
+		$eqId     = $this->getId();
+
+		if ($template == 'none') {
+			$html = parent::toHtml($_version);
+			if ($html == '') return '';
+			$bigCss = '<style>'
+				. '[data-eqlogic_id="' . $eqId . '"] .cmd.cmd-widget .execute{font-size:28px !important;min-width:60px !important;min-height:50px !important;padding:10px 14px !important}'
+				. '[data-eqlogic_id="' . $eqId . '"] .cmd.cmd-widget .execute i{font-size:28px !important}'
+				. '</style>';
+			$pos = strpos($html, '>');
+			if ($pos !== false) $html = substr($html, 0, $pos + 1) . $bigCss . substr($html, $pos + 1);
+			return $html;
+		}
+
+		$_version = jeedom::versionAlias($_version);
+		if (!$this->hasRight('r')) return '';
+
+		$cmdMap = array();
+		foreach ($this->getCmd() as $cmd) {
+			$lid = $cmd->getLogicalId();
+			if (!empty($lid)) $cmdMap[$lid] = $cmd->getId();
+		}
+		if (count($cmdMap) < 3) return parent::toHtml($_version);
+
+		$c = function($logId) use ($cmdMap) {
+			return isset($cmdMap[$logId]) ? $cmdMap[$logId] : '';
+		};
+
+		$stateCmd = $this->getCmd('info', 'state');
+		$stateOn  = (is_object($stateCmd) && $stateCmd->execCmd());
+		$ledColor = $stateOn ? 'rgb(0,200,100)' : 'rgb(80,80,80)';
+
+		$name   = $this->getName();
+		$uid    = 'eqLogic' . $eqId . '__' . mt_rand() . '__';
+		$eqLink = 'index.php?v=d&p=JeeTizen&m=JeeTizen&id=' . $eqId;
+		$isDark = ($template !== 'light');
+
+		$scale = (int)$this->getConfiguration('widget_scale', 100);
+		if (!in_array($scale, array(30, 50, 75, 100))) $scale = 100;
+		$ratio = round($scale / 100.0, 2);
+
+		// ── Palette ──────────────────────────────────────────────────────────
+		if ($isDark) {
+			$bg='#111111'; $btn='#2d2d2d'; $bord='#3a3a3a';
+			$txt='#ffffff'; $logo='#2a2a2a';
+			$pg1='#2a2a2a'; $pg2='#1a1a1a';
+			$og1='#4a4a4a'; $og2='#282828'; $okc='#cccccc';
+			$mg1='#3a3a3a'; $mg2='#1e1e1e'; $mb='#444444'; $mf='#cccccc';
+			$af='#999999';
+		} else {
+			$bg='#e0e0e0'; $btn='#cacaca'; $bord='#aaaaaa';
+			$txt='#111111'; $logo='#bbbbbb';
+			$pg1='#c8c8c8'; $pg2='#a8a8a8';
+			$og1='#d8d8d8'; $og2='#b0b0b0'; $okc='#222222';
+			$mg1='#c0c0c0'; $mg2='#a0a0a0'; $mb='#999999'; $mf='#333333';
+			$af='#555555';
+		}
+
+		$styleId = 'jt-style-' . $eqId . '-' . $template . '-' . $scale;
+
+		// ── CSS ───────────────────────────────────────────────────────────────
+		$css = ''
+			// Neutraliser les resets Bootstrap/Jeedom sur button dans notre remote
+			. '#jt-remote-' . $eqId . ' button,'
+			. '#jt-remote-' . $eqId . ' button:focus,'
+			. '#jt-remote-' . $eqId . ' button:active{'
+			.   'outline:none;box-shadow:none;'
+			. '}'
+			// Telecommande — le scale est applique ici via zoom (pas transform)
+			// zoom n affecte pas border-radius contrairement a transform:scale
+			. '#jt-remote-' . $eqId . '{'
+			.   'background:' . $bg . ' !important;'
+			.   'padding:25px 20px 20px;border-radius:40px;width:280px;'
+			.   'display:flex;flex-direction:column;align-items:center;gap:14px;'
+			.   'box-shadow:0 8px 40px rgba(0,0,0,0.95);border:1px solid ' . $bord . ';'
+			.   'box-sizing:border-box;'
+			. '}'
+			. '#jt-remote-' . $eqId . ' .row{'
+			.   'display:flex;width:100%;justify-content:center;gap:10px;align-items:center;'
+			. '}'
+			// ── Pad ──
+			. '#jt-remote-' . $eqId . ' .pad-wrap{'
+			.   'position:relative;width:210px;height:210px;flex-shrink:0;'
+			. '}'
+			. '#jt-remote-' . $eqId . ' .pad-bg{'
+			.   'position:absolute;top:0;left:0;width:100%;height:100%;border-radius:50%;'
+			.   'background:radial-gradient(circle at 50% 50%,' . $pg1 . ' 0%,' . $pg2 . ' 100%);'
+			.   'box-shadow:0 4px 20px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.05);'
+			. '}'
+			. '#jt-remote-' . $eqId . ' .pad-arrows{'
+			.   'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;'
+			. '}'
+			. '#jt-remote-' . $eqId . ' .pad-canvas{'
+			.   'position:absolute;top:0;left:0;width:210px;height:210px;'
+			.   'border-radius:50%;cursor:pointer;z-index:3;display:block;'
+			. '}'
+			// Bouton OK remplace par un <div role=button>
+			// Les <div> ne sont pas affectes par le reset Bootstrap button{border-radius:0}
+			. '#jt-remote-' . $eqId . ' .ok{'
+			.   'position:absolute;top:50%;left:50%;width:90px;height:90px;'
+			.   'transform:translate(-50%,-50%);'
+			.   'border-radius:50%;'
+			.   'background:radial-gradient(circle at 40% 35%,' . $og1 . ',' . $og2 . ');'
+			.   'border:1px solid ' . $mb . ';color:' . $okc . ';'
+			.   'font-weight:700;font-size:20px;z-index:10;cursor:pointer;'
+			.   'display:flex;justify-content:center;align-items:center;'
+			.   'box-shadow:0 4px 14px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.08);'
+			.   'letter-spacing:1px;user-select:none;-webkit-user-select:none;'
+			. '}'
+			. '#jt-remote-' . $eqId . ' .ok:active{filter:brightness(1.3);}'
+			// Boutons VOL/CH
+			. '#jt-remote-' . $eqId . ' .btn-vert{'
+			.   'background:' . $btn . ' !important;border:1px solid ' . $bord . ';color:' . $txt . ';'
+			.   'border-radius:12px !important;width:82px;height:82px;cursor:pointer;'
+			.   'display:flex;flex-direction:column;align-items:center;justify-content:center;'
+			.   'padding:0;gap:4px;box-shadow:0 2px 8px rgba(0,0,0,0.4);'
+			. '}'
+			. '#jt-remote-' . $eqId . ' .btn-vert svg{width:22px;height:22px;display:block;}'
+			. '#jt-remote-' . $eqId . ' .btn-vert span{font-size:13px;font-weight:700;color:' . $txt . ';line-height:1;}'
+			// Bouton MUTE — aussi un <div role=button>
+			. '#jt-remote-' . $eqId . ' .btn-mute{'
+			.   'width:62px;height:62px;min-width:62px;border-radius:50%;'
+			.   'background:radial-gradient(circle at 40% 35%,' . $mg1 . ',' . $mg2 . ');'
+			.   'border:1px solid ' . $mb . ';cursor:pointer;'
+			.   'display:flex;justify-content:center;align-items:center;'
+			.   'box-shadow:0 2px 8px rgba(0,0,0,0.5);user-select:none;flex-shrink:0;'
+			. '}'
+			// Boutons RETOUR/HOME
+			. '#jt-remote-' . $eqId . ' .btn-rect{'
+			.   'background:' . $btn . ' !important;border:1px solid ' . $bord . ';color:' . $txt . ';'
+			.   'border-radius:12px !important;height:62px;flex:1;cursor:pointer;'
+			.   'display:flex;flex-direction:column;align-items:center;justify-content:center;'
+			.   'gap:4px;box-shadow:0 2px 8px rgba(0,0,0,0.4);padding:0;'
+			. '}'
+			. '#jt-remote-' . $eqId . ' .btn-rect svg{width:24px;height:24px;fill:' . $txt . ';}'
+			. '#jt-remote-' . $eqId . ' .btn-rect span{font-size:12px;font-weight:700;color:' . $txt . ';line-height:1;}'
+			// Bouton POWER — aussi un <div role=button>
+			. '#jt-remote-' . $eqId . ' .btn-power{'
+			.   'width:62px;height:62px;border-radius:50%;'
+			.   'background:radial-gradient(circle at 38% 32%,#ff4444 0%,#cc0000 55%,#880000 100%);'
+			.   'display:flex;justify-content:center;align-items:center;'
+			.   'box-shadow:0 3px 12px rgba(200,0,0,0.5);'
+			.   'cursor:pointer;flex-shrink:0;user-select:none;'
+			. '}'
+			. '#jt-remote-' . $eqId . ' .btn-power svg{width:32px;height:32px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round;}'
+			// Bouton SOURCE
+			. '#jt-remote-' . $eqId . ' .btn-source{'
+			.   'height:38px;padding:0 14px;'
+			.   'border-radius:8px !important;'
+			.   'background:' . $btn . ' !important;border:1px solid ' . $bord . ';'
+			.   'color:' . $txt . ';font-weight:700;font-size:13px;'
+			.   'display:flex;align-items:center;justify-content:center;'
+			.   'gap:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.4);'
+			. '}'
+			. '#jt-remote-' . $eqId . ' .btn-source svg{width:16px;height:16px;flex-shrink:0;}'
+			// Boutons TV/HDMI
+			. '#jt-remote-' . $eqId . ' .btn-flat{'
+			.   'background:' . $btn . ' !important;border:1px solid ' . $bord . ';color:' . $txt . ';'
+			.   'border-radius:10px !important;height:42px;flex:1;font-weight:700;font-size:13px;cursor:pointer;'
+			.   'display:flex;align-items:center;justify-content:center;'
+			.   'box-shadow:0 2px 8px rgba(0,0,0,0.4);padding:0;'
+			. '}'
+			. '#jt-remote-' . $eqId . ' button:active,'
+			. '#jt-remote-' . $eqId . ' .ok:active,'
+			. '#jt-remote-' . $eqId . ' .btn-power:active,'
+			. '#jt-remote-' . $eqId . ' .btn-mute:active{filter:brightness(1.35);}'
+			. '#jt-remote-' . $eqId . ' .samsung-logo{'
+			.   'font-size:22px;font-weight:900;color:' . $logo . ';letter-spacing:5px;'
+			.   'margin-top:4px;text-transform:uppercase;'
+			. '}'
+		;
+
+		// ── SVG icons ─────────────────────────────────────────────────────────
+		$svgPower   = '<svg viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>';
+		$svgSource  = '<svg viewBox="0 0 24 24" fill="none" stroke="' . $txt . '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="15" rx="2"/><path d="M10 12h6m-3-3 3 3-3 3"/></svg>';
+		$svgMute    = '<svg viewBox="0 0 24 24" fill="none" stroke="' . $mf . '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z" fill="' . $mf . '" stroke="none"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+		$svgVolUp   = '<svg viewBox="0 0 24 24"><polygon points="12,4 20,16 4,16" fill="' . $txt . '"/></svg>';
+		$svgVolDown = '<svg viewBox="0 0 24 24"><polygon points="12,20 4,8 20,8" fill="' . $txt . '"/></svg>';
+		$svgChUp    = '<svg viewBox="0 0 24 24"><polygon points="12,4 20,16 4,16" fill="' . $txt . '"/></svg>';
+		$svgChDown  = '<svg viewBox="0 0 24 24"><polygon points="12,20 4,8 20,8" fill="' . $txt . '"/></svg>';
+		$svgReturn  = '<svg viewBox="0 0 24 24" fill="none" stroke="' . $txt . '" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,14 4,9 9,4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>';
+		$svgHome    = '<svg viewBox="0 0 24 24" fill="' . $txt . '"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>';
+		$svgArrows  = '<svg class="pad-arrows" viewBox="0 0 210 210">'
+		            . '<polygon points="105,22 94,42 116,42" fill="' . $af . '"/>'
+		            . '<polygon points="105,188 94,168 116,168" fill="' . $af . '"/>'
+		            . '<polygon points="22,105 42,94 42,116" fill="' . $af . '"/>'
+		            . '<polygon points="188,105 168,94 168,116" fill="' . $af . '"/>'
+		            . '</svg>';
+
+		// ── HTML télécommande ─────────────────────────────────────────────────
+		// .ok, .btn-power, .btn-mute sont des <div role="button"> et non des <button>
+		// => non affectes par le reset Bootstrap button{border-radius:0}
+		$r  = '<div id="jt-remote-' . $eqId . '">';
+		$r .= '<div style="width:7px;height:7px;border-radius:50%;background:' . $ledColor . ';margin:0 auto;box-shadow:0 0 5px ' . $ledColor . ';"></div>';
+
+		$r .= '<div class="row" style="justify-content:space-between;">';
+		$r .=   '<div class="btn-power" role="button" data-id="' . $c('on_off') . '">' . $svgPower . '</div>';
+		$r .=   '<button class="btn-source" data-id="' . $c('source') . '">' . $svgSource . ' SOURCE</button>';
+		$r .= '</div>';
+
+		$r .= '<div class="pad-wrap"'
+		    . ' data-up="'    . $c('up')    . '"'
+		    . ' data-down="'  . $c('down')  . '"'
+		    . ' data-left="'  . $c('left')  . '"'
+		    . ' data-right="' . $c('right') . '">';
+		$r .=   '<div class="pad-bg"></div>';
+		$r .=   $svgArrows;
+		$r .=   '<canvas class="pad-canvas" width="210" height="210"></canvas>';
+		// OK est un <div> — jamais affecte par button{border-radius:0}
+		$r .=   '<div class="ok" role="button" data-id="' . $c('enter') . '">OK</div>';
+		$r .= '</div>';
+
+		$r .= '<div class="row" style="justify-content:space-between;">';
+		$r .=   '<div style="display:flex;flex-direction:column;gap:10px;">';
+		$r .=     '<button class="btn-vert" data-id="' . $c('vol_up')   . '">' . $svgVolUp   . '<span>VOL</span></button>';
+		$r .=     '<button class="btn-vert" data-id="' . $c('vol_down') . '">' . $svgVolDown . '<span>VOL</span></button>';
+		$r .=   '</div>';
+		// MUTE est un <div>
+		$r .=   '<div class="btn-mute" role="button" data-id="' . $c('mute') . '">' . $svgMute . '</div>';
+		$r .=   '<div style="display:flex;flex-direction:column;gap:10px;">';
+		$r .=     '<button class="btn-vert" data-id="' . $c('ch_up')   . '">' . $svgChUp   . '<span>CH</span></button>';
+		$r .=     '<button class="btn-vert" data-id="' . $c('ch_down') . '">' . $svgChDown . '<span>CH</span></button>';
+		$r .=   '</div>';
+		$r .= '</div>';
+
+		$r .= '<div class="row">';
+		$r .=   '<button class="btn-rect" data-id="' . $c('return') . '">' . $svgReturn . '<span>RETOUR</span></button>';
+		$r .=   '<button class="btn-rect" data-id="' . $c('home')   . '">' . $svgHome   . '<span>HOME</span></button>';
+		$r .= '</div>';
+
+// Touches KEY_ non fonctionnelles
+//		$r .= '<div class="row" style="gap:8px;">';
+//		$r .=   '<button class="btn-flat" data-id="' . $c('tv')    . '">TV</button>';
+//		$r .=   '<button class="btn-flat" data-id="' . $c('hdmi1') . '">HDMI 1</button>';
+//		$r .=   '<button class="btn-flat" data-id="' . $c('hdmi2') . '">HDMI 2</button>';
+//		$r .= '</div>';
+
+		$r .= '<div class="samsung-logo">SAMSUNG</div>';
+		$r .= '</div>'; // #jt-remote
+
+		// ── Widget compact dashboard ──────────────────────────────────────────
+		$html  = '<div class="eqLogic eqLogic-widget allowResize multimedia" '
+			. 'data-eqtype="JeeTizen" data-eqlogic_id="' . $eqId . '" '
+			. 'data-eqlogic_uid="' . $uid . '" data-version="' . $_version . '" '
+			. 'data-category="multimedia" style="margin:4px;padding:0;height:120px;width:116px;">';
+		$html .= '<center class="widget-name">'
+			. '<a href="' . $eqLink . '" style="font-size:1.1em;">' . htmlspecialchars($name) . '</a>'
+			. '</center>';
+		$html .= '<div id="md_modal_jt_' . $eqId . '" style="display:none;">' . $r . '</div>';
+		$html .= '<div style="text-align:center;margin:2px 0;">'
+			. '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' . $ledColor . '"></span>'
+			. '</div>';
+		$html .= '<img class="jt-tv-img-' . $eqId . '" src="plugins/JeeTizen/core/template/widget/samsung_tizen.png" '
+			. 'style="max-width:100%;max-height:100%;cursor:pointer;display:block;margin:0 auto;"/>';
+
+		$cssJson = json_encode($css);
+		$eid = (int)$eqId;
+
+		$html .= '<script>'
+			. '(function(){'
+			// CSS : supprimer ancien style de cet eqId, injecter le nouveau
+			. 'document.querySelectorAll("style[id^=\'jt-style-' . $eid . '-\']").forEach(function(e){e.remove();});'
+			. 'var s=document.createElement("style");s.id="' . $styleId . '";'
+			. 's.textContent=' . $cssJson . ';document.head.appendChild(s);'
+
+			// Modale jQuery UI
+			. 'var $m=$("#md_modal_jt_' . $eid . '");'
+			. '$m.dialog({'
+			.   'modal:true,autoOpen:false,title:"' . addslashes($name) . '",'
+			.   'width:'.(int)round(280*$ratio+40).',resizable:false,'
+			.   'position:{my:"center",at:"center",of:window},'
+			.   'open:function(){'
+			// Appliquer le scale zoom sur #jt-remote uniquement a l ouverture de la modale
+			.     'document.getElementById("jt-remote-' . $eid . '").style.zoom="' . $scale . '%";'
+			// Forcer overflow:visible + fond transparent sur la chaine jQuery UI
+			.     '$(this).css({overflow:"visible",padding:"0",background:"transparent",border:"none"});'
+			.     '$(this).closest(".ui-dialog").find("*").css("overflow","visible");'
+			.     '$(this).closest(".ui-dialog").css({background:"transparent",border:"none",boxShadow:"none"});'
+			.     'jtPad' . $eid . '();'
+			.   '}'
+			. '});'
+
+			// Clic image → ouvre modale
+			. '$(".jt-tv-img-' . $eid . '").off("click.jt' . $eid . '").on("click.jt' . $eid . '",function(){'
+			.   '$m.dialog("open");'
+			. '});'
+
+			// Clics sur <button> standards
+			. '$(document).off("click.jtb' . $eid . '").on("click.jtb' . $eid . '",'
+			.   '"#jt-remote-' . $eid . ' button[data-id]",function(e){'
+			.   'e.stopPropagation();var cid=$(this).data("id");'
+			.   'if(cid&&cid!="")jeedom.cmd.execute({id:cid});'
+			. '});'
+
+			// Clics sur <div role=button> (ok, btn-power, btn-mute)
+			. '$(document).off("click.jtd' . $eid . '").on("click.jtd' . $eid . '",'
+			.   '"#jt-remote-' . $eid . ' div[role=button][data-id]",function(e){'
+			.   'e.stopPropagation();var cid=$(this).data("id");'
+			.   'if(cid&&cid!="")jeedom.cmd.execute({id:cid});'
+			. '});'
+
+			// Init canvas pad
+			. 'function jtPad' . $eid . '(){'
+			.   'var wrap=document.querySelector("#jt-remote-' . $eid . ' .pad-wrap");'
+			.   'if(!wrap||wrap._ji)return;wrap._ji=true;'
+			.   'var cv=wrap.querySelector(".pad-canvas");'
+			.   'var ctx=cv.getContext("2d");'
+			.   'cv.addEventListener("click",function(e){'
+			.     'var r=cv.getBoundingClientRect();'
+			.     'var sx=cv.width/r.width,sy=cv.height/r.height;'
+			.     'var x=(e.clientX-r.left)*sx-105;'
+			.     'var y=(e.clientY-r.top)*sy-105;'
+			.     'if(Math.sqrt(x*x+y*y)<45)return;'
+			.     'var a=Math.atan2(y,x)*180/Math.PI;'
+			.     'var cid,a1,a2;'
+			.     'if(a>=-45&&a<45)  {cid=wrap.dataset.right;a1=-45; a2=45;}'
+			.     'else if(a>=45&&a<135) {cid=wrap.dataset.down; a1=45;  a2=135;}'
+			.     'else if(a>=-135&&a<-45){cid=wrap.dataset.up;   a1=-135;a2=-45;}'
+			.     'else                   {cid=wrap.dataset.left; a1=135; a2=225;}'
+			.     'ctx.clearRect(0,0,210,210);'
+			.     'ctx.beginPath();ctx.moveTo(105,105);'
+			.     'ctx.arc(105,105,105,a1*Math.PI/180,a2*Math.PI/180);'
+			.     'ctx.closePath();ctx.fillStyle="rgba(255,255,255,0.15)";ctx.fill();'
+			.     'setTimeout(function(){ctx.clearRect(0,0,210,210);},200);'
+			.     'if(cid&&cid!="")jeedom.cmd.execute({id:cid});'
+			.   '});'
+			. '}'
+			. '})();</script>';
+
+		$html .= '</div>';
+		return $html;
+	}
+
+	/**
+	 * Récupération des paramètres de configuration TV
+	}
+
+	/**
 	 * Récupération des paramètres de configuration TV
 	 * Instancie TvParametres pour le bon connecteur Samsung
 	 */
@@ -207,166 +600,6 @@ class JeeTizen extends eqLogic {
 			include_file('core', 'Telecommande/JeeTizen.CommunicationStatus', 'class', 'JeeTizen');
 		}
 		return TvParametres::getInstanceFromConfig($this);
-	}
-
-	/**
-	 * Widget dashboard personnalisé style télécommande Samsung
-	 */
-	public function toHtml($_version = 'dashboard') {
-		$_version = jeedom::versionAlias($_version);
-
-		// Récupérer les commandes
-		$cmds = array();
-		foreach ($this->getCmd() as $cmd) {
-			$cmds[$cmd->getLogicalId()] = $cmd;
-		}
-
-		// État de la TV
-		$stateValue = 0;
-		$stateClass = 'jt-off';
-		if (isset($cmds['state']) && is_object($cmds['state'])) {
-			$stateValue = $cmds['state']->execCmd();
-			$stateClass = $stateValue ? 'jt-on' : 'jt-off';
-		}
-
-		// Construire les boutons
-		$btnPower = isset($cmds['on_off']) ? '#' . $cmds['on_off']->getId() . '#' : '';
-		$btnOff = isset($cmds['off']) ? '#' . $cmds['off']->getId() . '#' : '';
-		$btnMute = isset($cmds['mute']) ? '#' . $cmds['mute']->getId() . '#' : '';
-		$btnVolUp = isset($cmds['vol_up']) ? '#' . $cmds['vol_up']->getId() . '#' : '';
-		$btnVolDown = isset($cmds['vol_down']) ? '#' . $cmds['vol_down']->getId() . '#' : '';
-		$btnChUp = isset($cmds['ch_up']) ? '#' . $cmds['ch_up']->getId() . '#' : '';
-		$btnChDown = isset($cmds['ch_down']) ? '#' . $cmds['ch_down']->getId() . '#' : '';
-		$btnSource = isset($cmds['source']) ? '#' . $cmds['source']->getId() . '#' : '';
-
-		$eqId = $this->getId();
-		$name = $this->getName();
-		$uid = 'jeetizen_' . $eqId . '_' . mt_rand();
-
-		$html = <<<HTML
-<div class="eqLogic eqLogic-widget allowResize multimedia" data-eqlogic_id="{$eqId}" data-eqlogic_uid="{$uid}" data-version="{$_version}" style="min-width:220px;min-height:200px;">
-<style>
-.jt-remote-{$eqId} {
-	background: linear-gradient(145deg, #1a1a2e, #16213e);
-	border-radius: 16px;
-	padding: 12px;
-	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-	color: #e0e0e0;
-	box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
-}
-.jt-remote-{$eqId} .jt-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 10px;
-	padding-bottom: 8px;
-	border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-.jt-remote-{$eqId} .jt-title {
-	font-size: 13px;
-	font-weight: 600;
-	letter-spacing: 0.5px;
-	color: #fff;
-}
-.jt-remote-{$eqId} .jt-status {
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	transition: all 0.3s;
-}
-.jt-remote-{$eqId} .jt-on { background: #00e676; box-shadow: 0 0 8px rgba(0,230,118,0.6); }
-.jt-remote-{$eqId} .jt-off { background: #555; }
-.jt-remote-{$eqId} .jt-controls {
-	display: grid;
-	grid-template-columns: 1fr 1fr 1fr;
-	gap: 6px;
-}
-.jt-remote-{$eqId} .jt-btn {
-	background: linear-gradient(145deg, #2a2a4a, #1e1e3a);
-	border: 1px solid rgba(255,255,255,0.06);
-	border-radius: 10px;
-	color: #ccc;
-	font-size: 18px;
-	padding: 10px 0;
-	cursor: pointer;
-	text-align: center;
-	transition: all 0.15s ease;
-	user-select: none;
-	line-height: 1;
-}
-.jt-remote-{$eqId} .jt-btn:hover {
-	background: linear-gradient(145deg, #3a3a5a, #2e2e4a);
-	color: #fff;
-	transform: scale(1.03);
-}
-.jt-remote-{$eqId} .jt-btn:active {
-	transform: scale(0.96);
-	background: linear-gradient(145deg, #1a1a3a, #151530);
-}
-.jt-remote-{$eqId} .jt-btn-power {
-	background: linear-gradient(145deg, #4a1a1a, #3a1010);
-	border-color: rgba(255,60,60,0.15);
-	color: #ff5252;
-}
-.jt-remote-{$eqId} .jt-btn-power:hover {
-	background: linear-gradient(145deg, #5a2a2a, #4a1a1a);
-	color: #ff7070;
-}
-.jt-remote-{$eqId} .jt-btn-mute {
-	font-size: 14px;
-}
-.jt-remote-{$eqId} .jt-btn-source {
-	grid-column: span 3;
-	font-size: 12px;
-	padding: 8px 0;
-	letter-spacing: 1px;
-	text-transform: uppercase;
-	color: #80cbc4;
-}
-.jt-remote-{$eqId} .jt-label {
-	font-size: 9px;
-	display: block;
-	margin-top: 2px;
-	opacity: 0.5;
-	letter-spacing: 0.5px;
-}
-</style>
-<div class="jt-remote-{$eqId}">
-	<div class="jt-header">
-		<a href="index.php?v=d&p=JeeTizen&m=JeeTizen&id={$eqId}" class="jt-title" style="color:#fff;text-decoration:none;">{$name}</a>
-		<div class="jt-status {$stateClass}" title="{STATE_LABEL}"></div>
-	</div>
-	<div class="jt-controls">
-		<div class="jt-btn jt-btn-power" onclick="jeedom.cmd.execute({id:'{POWER_ID}'})">⏻<span class="jt-label">ON/OFF</span></div>
-		<div class="jt-btn jt-btn-mute" onclick="jeedom.cmd.execute({id:'{MUTE_ID}'})">🔇<span class="jt-label">MUTE</span></div>
-		<div class="jt-btn" onclick="jeedom.cmd.execute({id:'{OFF_ID}'})">⏼<span class="jt-label">OFF</span></div>
-		<div class="jt-btn" onclick="jeedom.cmd.execute({id:'{VOL_UP_ID}'})">🔊<span class="jt-label">VOL+</span></div>
-		<div class="jt-btn" onclick="jeedom.cmd.execute({id:'{CH_UP_ID}'})">▲<span class="jt-label">CH+</span></div>
-		<div class="jt-btn" onclick="jeedom.cmd.execute({id:'{VOL_DOWN_ID}'})">🔉<span class="jt-label">VOL-</span></div>
-		<div class="jt-btn" style="visibility:hidden;"></div>
-		<div class="jt-btn" onclick="jeedom.cmd.execute({id:'{CH_DOWN_ID}'})">▼<span class="jt-label">CH-</span></div>
-		<div class="jt-btn" style="visibility:hidden;"></div>
-		<div class="jt-btn jt-btn-source" onclick="jeedom.cmd.execute({id:'{SOURCE_ID}'})">⎆ Source</div>
-	</div>
-</div>
-</div>
-HTML;
-
-		// Remplacer les IDs
-		$replacements = array(
-			'{POWER_ID}'  => isset($cmds['on_off']) ? $cmds['on_off']->getId() : '',
-			'{OFF_ID}'    => isset($cmds['off']) ? $cmds['off']->getId() : '',
-			'{MUTE_ID}'   => isset($cmds['mute']) ? $cmds['mute']->getId() : '',
-			'{VOL_UP_ID}' => isset($cmds['vol_up']) ? $cmds['vol_up']->getId() : '',
-			'{VOL_DOWN_ID}' => isset($cmds['vol_down']) ? $cmds['vol_down']->getId() : '',
-			'{CH_UP_ID}'  => isset($cmds['ch_up']) ? $cmds['ch_up']->getId() : '',
-			'{CH_DOWN_ID}' => isset($cmds['ch_down']) ? $cmds['ch_down']->getId() : '',
-			'{SOURCE_ID}' => isset($cmds['source']) ? $cmds['source']->getId() : '',
-			'{STATE_LABEL}' => $stateValue ? 'TV allumée' : 'TV éteinte',
-		);
-		$html = str_replace(array_keys($replacements), array_values($replacements), $html);
-
-		return $html;
 	}
 
 	/*     * **********************Getteur Setteur*************************** */
@@ -382,6 +615,16 @@ class JeeTizenCmd extends cmd {
 		'ch_up'    => 'KEY_CHUP',
 		'ch_down'  => 'KEY_CHDOWN',
 		'source'   => 'KEY_SOURCE',
+		'up'       => 'KEY_UP',
+		'down'     => 'KEY_DOWN',
+		'left'     => 'KEY_LEFT',
+		'right'    => 'KEY_RIGHT',
+		'enter'    => 'KEY_ENTER',
+		'return'   => 'KEY_RETURN',
+		'home'     => 'KEY_HOME',
+		'tv'       => 'KEY_TV',
+		'hdmi1'    => 'KEY_HDMI1',
+		'hdmi2'    => 'KEY_HDMI2',
 	];
 
 	/*     * ***********************Methode static*************************** */

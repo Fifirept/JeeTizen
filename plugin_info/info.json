@@ -1,7 +1,7 @@
 {
 	"id": "JeeTizen",
 	"name": "JeeTizen",
-	"pluginVersion": "0.1",
+	"pluginVersion": "0.2",
 	"description": "Contrôle des téléviseurs Samsung Tizen et Legacy via WebSocket et Wake On LAN",
 	"licence": "AGPL",
 	"author": "Fifirept",

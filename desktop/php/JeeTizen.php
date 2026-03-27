@@ -247,6 +247,33 @@ $eqLogics = eqLogic::byType($plugin->getId());
 								</div>
 							</div>
 
+							<legend><i class="fas fa-palette"></i> {{Widget télécommande}}</legend>
+							<div class="form-group">
+								<label class="col-sm-4 control-label">{{Template}}
+									<sup><i class="fas fa-question-circle tooltips" title="{{Choisir le style de la télécommande sur le dashboard et le design. 'Aucun' affiche les boutons Jeedom standards.}}"></i></sup>
+								</label>
+								<div class="col-sm-6">
+									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="widget_template">
+										<option value="dark">{{Sombre}}</option>
+										<option value="light">{{Clair}}</option>
+										<option value="none">{{Aucun (standard Jeedom)}}</option>
+									</select>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label">{{Taille widget}}
+									<sup><i class="fas fa-question-circle tooltips" title="{{Taille de la telecommande : 30, 50, 75 ou 100% (defaut)}}"></i></sup>
+								</label>
+								<div class="col-sm-6">
+									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="widget_scale">
+										<option value="100">{{100% (normal)}}</option>
+										<option value="75">{{75%}}</option>
+										<option value="50">{{50%}}</option>
+										<option value="30">{{30%}}</option>
+									</select>
+								</div>
+							</div>
+
 							<legend><i class="fas fa-info"></i> {{Informations}}</legend>
 							<div class="form-group">
 								<label class="col-sm-4 control-label">{{Description}}</label>
@@ -285,5 +312,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
 	</div><!-- /.eqLogic -->
 </div><!-- /.row row-overflow -->
 
+<?php include_file('desktop', 'JeeTizen', 'css', 'JeeTizen'); ?>
 <?php include_file('desktop', 'JeeTizen', 'js', 'JeeTizen'); ?>
 <?php include_file('core', 'plugin.template', 'js'); ?>
