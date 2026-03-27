@@ -245,22 +245,36 @@ class JeeTizen extends eqLogic {
 	}
 
 	/**
-	 * Widget télécommande Samsung - charge le fichier template sombre ou clair
+	 * Widget télécommande Samsung
+	 * - "none" : widget natif Jeedom avec icônes 2x plus grosses
+	 * - "dark"/"light" : image PNG cliquable → modale avec télécommande HTML
 	 */
 	public function toHtml($_version = 'dashboard') {
 		$template = $this->getConfiguration('widget_template', 'dark');
+		$eqId = $this->getId();
 
-		// Template "aucun" → rendu natif Jeedom
+		// --- Template "aucun" : widget natif avec icônes 2× plus grosses ---
 		if ($template == 'none') {
-			return parent::toHtml($_version);
+			$html = parent::toHtml($_version);
+			if ($html == '') {
+				return '';
+			}
+			$bigCss = '<style>'
+				. '[data-eqlogic_id="' . $eqId . '"] .cmd.cmd-widget .execute{font-size:28px !important;min-width:60px !important;min-height:50px !important;padding:10px 14px !important}'
+				. '[data-eqlogic_id="' . $eqId . '"] .cmd.cmd-widget .execute i{font-size:28px !important}'
+				. '</style>';
+			$pos = strpos($html, '>');
+			if ($pos !== false) {
+				$html = substr($html, 0, $pos + 1) . $bigCss . substr($html, $pos + 1);
+			}
+			return $html;
 		}
 
+		// --- Templates sombre/clair : image PNG → modale télécommande ---
 		$_version = jeedom::versionAlias($_version);
 		if (!$this->hasRight('r')) {
 			return '';
 		}
-
-		$eqId = $this->getId();
 
 		// Charger le fichier template HTML
 		$tplFile = ($template == 'light') ? 'light' : 'dark';
@@ -278,8 +292,6 @@ class JeeTizen extends eqLogic {
 				$cmdMap[$lid] = $cmd->getId();
 			}
 		}
-
-		// Pas assez de commandes → fallback natif
 		if (count($cmdMap) < 3) {
 			return parent::toHtml($_version);
 		}
@@ -290,51 +302,71 @@ class JeeTizen extends eqLogic {
 		$ledColor = $stateOn ? 'rgb(0,200,100)' : 'rgb(80,80,80)';
 
 		// Remplacements dans le template
-		$replace = array(
-			'#eqId#'         => $eqId,
-			'#ledColor#'     => $ledColor,
-			'#cmd_on_off#'   => isset($cmdMap['on_off']) ? $cmdMap['on_off'] : '',
-			'#cmd_source#'   => isset($cmdMap['source']) ? $cmdMap['source'] : '',
-			'#cmd_up#'       => isset($cmdMap['up']) ? $cmdMap['up'] : '',
-			'#cmd_down#'     => isset($cmdMap['down']) ? $cmdMap['down'] : '',
-			'#cmd_left#'     => isset($cmdMap['left']) ? $cmdMap['left'] : '',
-			'#cmd_right#'    => isset($cmdMap['right']) ? $cmdMap['right'] : '',
-			'#cmd_enter#'    => isset($cmdMap['enter']) ? $cmdMap['enter'] : '',
-			'#cmd_vol_up#'   => isset($cmdMap['vol_up']) ? $cmdMap['vol_up'] : '',
-			'#cmd_vol_down#' => isset($cmdMap['vol_down']) ? $cmdMap['vol_down'] : '',
-			'#cmd_mute#'     => isset($cmdMap['mute']) ? $cmdMap['mute'] : '',
-			'#cmd_ch_up#'    => isset($cmdMap['ch_up']) ? $cmdMap['ch_up'] : '',
-			'#cmd_ch_down#'  => isset($cmdMap['ch_down']) ? $cmdMap['ch_down'] : '',
-			'#cmd_return#'   => isset($cmdMap['return']) ? $cmdMap['return'] : '',
-			'#cmd_home#'     => isset($cmdMap['home']) ? $cmdMap['home'] : '',
-			'#cmd_tv#'       => isset($cmdMap['tv']) ? $cmdMap['tv'] : '',
-			'#cmd_hdmi1#'    => isset($cmdMap['hdmi1']) ? $cmdMap['hdmi1'] : '',
-			'#cmd_hdmi2#'    => isset($cmdMap['hdmi2']) ? $cmdMap['hdmi2'] : '',
-		);
+		$replace = array('#eqId#' => $eqId, '#ledColor#' => $ledColor);
+		$allCmds = array('on_off','source','up','down','left','right','enter',
+			'vol_up','vol_down','mute','ch_up','ch_down','return','home','tv','hdmi1','hdmi2');
+		foreach ($allCmds as $logId) {
+			$replace['#cmd_' . $logId . '#'] = isset($cmdMap[$logId]) ? $cmdMap[$logId] : '';
+		}
 		$tplHtml = str_replace(array_keys($replace), array_values($replace), $tplHtml);
 
-		// Construire le wrapper Jeedom minimal (pour resize + design + identification)
+		// Échapper le HTML pour JS
+		$tplEscaped = json_encode($tplHtml);
+
 		$name = $this->getName();
-		$objectName = '';
-		$object = $this->getObject();
-		if (is_object($object)) {
-			$objectName = $object->getName();
-		}
-		$eqLink = 'index.php?v=d&p=JeeTizen&m=JeeTizen&id=' . $eqId;
 		$uid = 'eqLogic' . $eqId . '__' . mt_rand() . '__';
+		$eqLink = 'index.php?v=d&p=JeeTizen&m=JeeTizen&id=' . $eqId;
 
-		$width = $this->getDisplay('width', '385px');
-		$height = $this->getDisplay('height', 'auto');
-
-		$html = '<div class="eqLogic eqLogic-widget allowResize" '
+		// Widget compact : image + LED + nom
+		$html = '<div class="eqLogic eqLogic-widget allowResize multimedia" '
 			. 'data-eqtype="JeeTizen" '
 			. 'data-eqlogic_id="' . $eqId . '" '
 			. 'data-eqlogic_uid="' . $uid . '" '
 			. 'data-version="' . $_version . '" '
 			. 'data-category="multimedia" '
-			. 'style="width:' . $width . ';height:' . $height . ';">'
-			. $tplHtml
+			. 'style="margin:4px;padding:0px;height:120px;width:116px;">';
+
+		// Nom widget
+		$html .= '<center class="widget-name">'
+			. '<a href="' . $eqLink . '" style="font-size:1.1em;">' . $name . '</a>'
+			. '</center>';
+
+		// Div modale (cachée)
+		$html .= '<div id="md_modal_jt_' . $eqId . '"></div>';
+
+		// LED état
+		$html .= '<div style="text-align:center;margin:2px 0;">'
+			. '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' . $ledColor . '"></span>'
 			. '</div>';
+
+		// Image cliquable
+		$html .= '<img class="jt-tv-img-' . $eqId . '" '
+			. 'src="plugins/JeeTizen/plugin_info/JeeTizen_icon.png" '
+			. 'style="max-width:100%;max-height:100%;cursor:pointer;display:block;margin:0 auto;"/>';
+
+		// Script modale jQuery UI
+		$html .= '<script>'
+			. '(function(){'
+			. 'var eqId="' . $eqId . '";'
+			. 'var tpl=' . $tplEscaped . ';'
+			. 'var name="' . addslashes($name) . '";'
+			// Init modale
+			. '$("#md_modal_jt_"+eqId).dialog({'
+			. 'modal:true,autoOpen:false,title:name,'
+			. 'width:300,border:0,resizable:false,'
+			. 'position:{my:"center",at:"center",of:window},'
+			. 'closeText:"",'
+			. 'open:function(){$(this).css("overflow","auto").css("padding","0");}'
+			. '});'
+			// Clic image → ouvrir modale
+			. '$(".jt-tv-img-"+eqId).on("click",function(){'
+			. 'var $m=$("#md_modal_jt_"+eqId);'
+			. '$m.html(tpl).dialog("open");'
+			. '});'
+			. '})();'
+			. '</script>';
+
+		$html .= '</div>';
 
 		return $html;
 	}
