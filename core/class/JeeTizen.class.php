@@ -502,7 +502,7 @@ class JeeTizen extends eqLogic {
 		$html .= '<div style="text-align:center;margin:2px 0;">'
 			. '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' . $ledColor . '"></span>'
 			. '</div>';
-		$html .= '<img class="jt-tv-img-' . $eqId . '" src="plugins/JeeTizen/plugin_info/JeeTizen_icon.png" '
+		$html .= '<img class="jt-tv-img-' . $eqId . '" src="plugins/JeeTizen/core/template/widget/samsung_tizen.png" '
 			. 'style="max-width:100%;max-height:100%;cursor:pointer;display:block;margin:0 auto;"/>';
 
 		$cssJson = json_encode($css);
