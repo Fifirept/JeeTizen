@@ -511,7 +511,7 @@ class JeeTizen extends eqLogic {
 			. '</div>';
 
 		$eid = (int)$eqId;
-		$dialogWidth = (int)round(280*$ratio+40);
+		$dialogWidth = (int)round(280*$ratio+30);
 
 		// Encoder le HTML de la télécommande en base64 pour le stocker dans un data-attribute
 		$remoteB64 = base64_encode($r);
