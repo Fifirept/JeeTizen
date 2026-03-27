@@ -343,10 +343,6 @@ class JeeTizen extends eqLogic {
 			. '#jt-remote-' . $eqId . ' .pad-arrows{'
 			.   'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;'
 			. '}'
-			. '#jt-remote-' . $eqId . ' .pad-canvas{'
-			.   'position:absolute;top:0;left:0;width:210px;height:210px;'
-			.   'border-radius:50%;cursor:pointer;z-index:3;display:block;'
-			. '}'
 			// Bouton OK remplace par un <div role=button>
 			// Les <div> ne sont pas affectes par le reset Bootstrap button{border-radius:0}
 			. '#jt-remote-' . $eqId . ' .ok{'
@@ -440,56 +436,63 @@ class JeeTizen extends eqLogic {
 		            . '<polygon points="188,105 168,94 168,116" fill="' . $af . '"/>'
 		            . '</svg>';
 
+		// ── Helper: onclick pour exécuter une commande ──────────────────────
+		$oc = function($logId) use ($cmdMap) {
+			if (!isset($cmdMap[$logId]) || $cmdMap[$logId] === '') return '';
+			return 'onclick="jeedom.cmd.execute({id:\'' . $cmdMap[$logId] . '\'});event.stopPropagation();"';
+		};
+
 		// ── HTML télécommande ─────────────────────────────────────────────────
-		// .ok, .btn-power, .btn-mute sont des <div role="button"> et non des <button>
-		// => non affectes par le reset Bootstrap button{border-radius:0}
 		$r  = '<div id="jt-remote-' . $eqId . '">';
 		$r .= '<div style="width:7px;height:7px;border-radius:50%;background:' . $ledColor . ';margin:0 auto;box-shadow:0 0 5px ' . $ledColor . ';"></div>';
 
 		$r .= '<div class="row" style="justify-content:space-between;">';
-		$r .=   '<div class="btn-power" role="button" data-id="' . $c('on_off') . '">' . $svgPower . '</div>';
-		$r .=   '<button class="btn-source" data-id="' . $c('source') . '">' . $svgSource . ' SOURCE</button>';
+		$r .=   '<div class="btn-power" role="button" ' . $oc('on_off') . '>' . $svgPower . '</div>';
+		$r .=   '<button class="btn-source" ' . $oc('source') . '>' . $svgSource . ' SOURCE</button>';
 		$r .= '</div>';
 
-		$r .= '<div class="pad-wrap"'
-		    . ' data-up="'    . $c('up')    . '"'
-		    . ' data-down="'  . $c('down')  . '"'
-		    . ' data-left="'  . $c('left')  . '"'
-		    . ' data-right="' . $c('right') . '">';
+		$r .= '<div class="pad-wrap">';
+		// Zones cliquables du pad (simple divs avec clip-path)
 		$r .=   '<div class="pad-bg"></div>';
 		$r .=   $svgArrows;
-		$r .=   '<canvas class="pad-canvas" width="210" height="210"></canvas>';
-		// OK est un <div> — jamais affecte par button{border-radius:0}
-		$r .=   '<div class="ok" role="button" data-id="' . $c('enter') . '">OK</div>';
+		$r .=   '<div class="pad-zone pad-up" ' . $oc('up') . '></div>';
+		$r .=   '<div class="pad-zone pad-down" ' . $oc('down') . '></div>';
+		$r .=   '<div class="pad-zone pad-left" ' . $oc('left') . '></div>';
+		$r .=   '<div class="pad-zone pad-right" ' . $oc('right') . '></div>';
+		$r .=   '<div class="ok" role="button" ' . $oc('enter') . '>OK</div>';
 		$r .= '</div>';
 
 		$r .= '<div class="row" style="justify-content:space-between;">';
 		$r .=   '<div style="display:flex;flex-direction:column;gap:10px;">';
-		$r .=     '<button class="btn-vert" data-id="' . $c('vol_up')   . '">' . $svgVolUp   . '<span>VOL</span></button>';
-		$r .=     '<button class="btn-vert" data-id="' . $c('vol_down') . '">' . $svgVolDown . '<span>VOL</span></button>';
+		$r .=     '<button class="btn-vert" ' . $oc('vol_up')   . '>' . $svgVolUp   . '<span>VOL</span></button>';
+		$r .=     '<button class="btn-vert" ' . $oc('vol_down') . '>' . $svgVolDown . '<span>VOL</span></button>';
 		$r .=   '</div>';
-		// MUTE est un <div>
-		$r .=   '<div class="btn-mute" role="button" data-id="' . $c('mute') . '">' . $svgMute . '</div>';
+		$r .=   '<div class="btn-mute" role="button" ' . $oc('mute') . '>' . $svgMute . '</div>';
 		$r .=   '<div style="display:flex;flex-direction:column;gap:10px;">';
-		$r .=     '<button class="btn-vert" data-id="' . $c('ch_up')   . '">' . $svgChUp   . '<span>CH</span></button>';
-		$r .=     '<button class="btn-vert" data-id="' . $c('ch_down') . '">' . $svgChDown . '<span>CH</span></button>';
+		$r .=     '<button class="btn-vert" ' . $oc('ch_up')   . '>' . $svgChUp   . '<span>CH</span></button>';
+		$r .=     '<button class="btn-vert" ' . $oc('ch_down') . '>' . $svgChDown . '<span>CH</span></button>';
 		$r .=   '</div>';
 		$r .= '</div>';
 
 		$r .= '<div class="row">';
-		$r .=   '<button class="btn-rect" data-id="' . $c('return') . '">' . $svgReturn . '<span>RETOUR</span></button>';
-		$r .=   '<button class="btn-rect" data-id="' . $c('home')   . '">' . $svgHome   . '<span>HOME</span></button>';
+		$r .=   '<button class="btn-rect" ' . $oc('return') . '>' . $svgReturn . '<span>RETOUR</span></button>';
+		$r .=   '<button class="btn-rect" ' . $oc('home')   . '>' . $svgHome   . '<span>HOME</span></button>';
 		$r .= '</div>';
 
-// Touches KEY_ non fonctionnelles
-//		$r .= '<div class="row" style="gap:8px;">';
-//		$r .=   '<button class="btn-flat" data-id="' . $c('tv')    . '">TV</button>';
-//		$r .=   '<button class="btn-flat" data-id="' . $c('hdmi1') . '">HDMI 1</button>';
-//		$r .=   '<button class="btn-flat" data-id="' . $c('hdmi2') . '">HDMI 2</button>';
-//		$r .= '</div>';
-
 		$r .= '<div class="samsung-logo">SAMSUNG</div>';
-		$r .= '</div>'; // #jt-remote
+		$r .= '</div>';
+
+		// ── CSS pad-zone (remplace le canvas) ────────────────────────────────
+		$css .= '#jt-remote-' . $eqId . ' .pad-zone{'
+			.   'position:absolute;top:0;left:0;width:100%;height:100%;'
+			.   'cursor:pointer;z-index:3;background:transparent;'
+			. '}'
+			. '#jt-remote-' . $eqId . ' .pad-zone:active{background:rgba(255,255,255,0.12);}'
+			. '#jt-remote-' . $eqId . ' .pad-up{clip-path:polygon(50% 50%,0% 0%,100% 0%);}'
+			. '#jt-remote-' . $eqId . ' .pad-down{clip-path:polygon(50% 50%,0% 100%,100% 100%);}'
+			. '#jt-remote-' . $eqId . ' .pad-left{clip-path:polygon(50% 50%,0% 0%,0% 100%);}'
+			. '#jt-remote-' . $eqId . ' .pad-right{clip-path:polygon(50% 50%,100% 0%,100% 100%);}'
+		;
 
 		// ── Widget compact dashboard ──────────────────────────────────────────
 		$savedW = $this->getDisplay('width', '116px');
@@ -501,94 +504,49 @@ class JeeTizen extends eqLogic {
 		$html .= '<center class="widget-name">'
 			. '<a href="' . $eqLink . '" style="font-size:1.1em;">' . htmlspecialchars($name) . '</a>'
 			. '</center>';
+
+		// Modale: contenu caché dans un div
 		$html .= '<div id="md_modal_jt_' . $eqId . '" style="display:none;">' . $r . '</div>';
+
+		// LED état
 		$html .= '<div style="text-align:center;margin:2px 0;">'
 			. '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' . $ledColor . '"></span>'
 			. '</div>';
-		$html .= '<img class="jt-tv-img-' . $eqId . '" src="plugins/JeeTizen/core/template/widget/samsung_tizen.png" '
-			. 'style="max-width:100%;max-height:100%;cursor:pointer;display:block;margin:0 auto;" '
-			. 'onclick="jtOpen' . $eid . '()"/>';
 
 		$eid = (int)$eqId;
+		$dialogWidth = (int)round(280*$ratio+40);
 
-		// CSS directement dans le HTML
-		$html .= '<style id="' . $styleId . '">' . $css . '</style>';
-
-		// Script : fonction globale nommée (fonctionne en dashboard ET design)
-		$html .= '<script>'
-			// Fonction globale d'ouverture de la modale
-			. 'function jtOpen' . $eid . '(){'
-			.   'var $m=$("#md_modal_jt_' . $eid . '");'
-			// Initialiser la modale si pas encore fait
-			.   'if(!$m.hasClass("ui-dialog-content")){'
-			.     '$m.dialog({'
-			.       'modal:true,autoOpen:false,title:"' . addslashes($name) . '",'
-			.       'width:'.(int)round(280*$ratio+40).',resizable:false,'
-			.       'position:{my:"center",at:"center",of:window},'
-			.       'open:function(){'
-			.         'var self=this;'
-			.         'setTimeout(function(){'
-			.           'var rm=document.getElementById("jt-remote-' . $eid . '");'
-			.           'if(rm)rm.style.zoom="' . $scale . '%";'
-			.           '$(self).css({overflow:"visible",padding:"0",background:"transparent",border:"none"});'
-			.           '$(self).closest(".ui-dialog").find("*").css("overflow","visible");'
-			.           '$(self).closest(".ui-dialog").css({background:"transparent",border:"none",boxShadow:"none"});'
-			.           'jtPadInit' . $eid . '();'
-			.         '},50);'
-			.       '}'
-			.     '});'
-			.   '}'
-			.   '$m.dialog("open");'
-			. '}'
-
-			// Fonction globale init pad canvas
-			. 'function jtPadInit' . $eid . '(){'
-			.   'var wrap=document.querySelector("#jt-remote-' . $eid . ' .pad-wrap");'
-			.   'if(!wrap)return;'
-			.   'var cv=wrap.querySelector(".pad-canvas");'
-			.   'if(!cv||cv._jtClick)return;'
-			.   'cv._jtClick=true;'
-			.   'var ctx=cv.getContext("2d");'
-			.   'cv.addEventListener("click",function(e){'
-			.     'var r=cv.getBoundingClientRect();'
-			.     'var sx=cv.width/r.width,sy=cv.height/r.height;'
-			.     'var x=(e.clientX-r.left)*sx-105;'
-			.     'var y=(e.clientY-r.top)*sy-105;'
-			.     'if(Math.sqrt(x*x+y*y)<45)return;'
-			.     'var a=Math.atan2(y,x)*180/Math.PI;'
-			.     'var cid,a1,a2;'
-			.     'if(a>=-45&&a<45)  {cid=wrap.dataset.right;a1=-45; a2=45;}'
-			.     'else if(a>=45&&a<135) {cid=wrap.dataset.down; a1=45;  a2=135;}'
-			.     'else if(a>=-135&&a<-45){cid=wrap.dataset.up;   a1=-135;a2=-45;}'
-			.     'else                   {cid=wrap.dataset.left; a1=135; a2=225;}'
-			.     'ctx.clearRect(0,0,210,210);'
-			.     'ctx.beginPath();ctx.moveTo(105,105);'
-			.     'ctx.arc(105,105,105,a1*Math.PI/180,a2*Math.PI/180);'
-			.     'ctx.closePath();ctx.fillStyle="rgba(255,255,255,0.15)";ctx.fill();'
-			.     'setTimeout(function(){ctx.clearRect(0,0,210,210);},200);'
-			.     'if(cid&&cid!="")jeedom.cmd.execute({id:cid});'
+		// Image cliquable avec TOUT le JS dans le onclick (pas de <script>)
+		$html .= '<img src="plugins/JeeTizen/core/template/widget/samsung_tizen.png" '
+			. 'style="max-width:100%;max-height:100%;cursor:pointer;display:block;margin:0 auto;" '
+			. 'onclick="'
+			. 'var m=jQuery(\'#md_modal_jt_' . $eid . '\');'
+			. 'if(!m.hasClass(\'ui-dialog-content\')){'
+			.   'm.dialog({'
+			.     'modal:true,autoOpen:false,'
+			.     'title:\'' . addslashes($name) . '\','
+			.     'width:' . $dialogWidth . ',resizable:false,'
+			.     'position:{my:\'center\',at:\'center\',of:window},'
+			.     'open:function(){'
+			.       'var s=this;'
+			.       'setTimeout(function(){'
+			.         'var rm=document.getElementById(\'jt-remote-' . $eid . '\');'
+			.         'if(rm)rm.style.zoom=\'' . $scale . '%\';'
+			.         'jQuery(s).css({overflow:\'visible\',padding:\'0\',background:\'transparent\',border:\'none\'});'
+			.         'jQuery(s).closest(\'.ui-dialog\').find(\'*\').css(\'overflow\',\'visible\');'
+			.         'jQuery(s).closest(\'.ui-dialog\').css({background:\'transparent\',border:\'none\',boxShadow:\'none\'});'
+			.       '},50);'
+			.     '}'
 			.   '});'
 			. '}'
+			. 'm.dialog(\'open\');'
+			. '"/>';
 
-			// Clics sur boutons de la télécommande (délégation sur document — fonctionne toujours)
-			. '$(document).off("click.jtb' . $eid . '").on("click.jtb' . $eid . '",'
-			.   '"#jt-remote-' . $eid . ' button[data-id]",function(e){'
-			.   'e.stopPropagation();var cid=$(this).data("id");'
-			.   'if(cid&&cid!="")jeedom.cmd.execute({id:cid});'
-			. '});'
-			. '$(document).off("click.jtd' . $eid . '").on("click.jtd' . $eid . '",'
-			.   '"#jt-remote-' . $eid . ' div[role=button][data-id]",function(e){'
-			.   'e.stopPropagation();var cid=$(this).data("id");'
-			.   'if(cid&&cid!="")jeedom.cmd.execute({id:cid});'
-			. '});'
-			. '</script>';
+		// CSS directement dans le HTML (pas de JS)
+		$html .= '<style id="' . $styleId . '">' . $css . '</style>';
 
 		$html .= '</div>';
 		return $html;
-	}
-
-	/**
-	 * Récupération des paramètres de configuration TV
 	}
 
 	/**
