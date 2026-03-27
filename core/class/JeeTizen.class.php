@@ -481,11 +481,12 @@ class JeeTizen extends eqLogic {
 		$r .=   '<button class="btn-rect" data-id="' . $c('home')   . '">' . $svgHome   . '<span>HOME</span></button>';
 		$r .= '</div>';
 
-		$r .= '<div class="row" style="gap:8px;">';
-		$r .=   '<button class="btn-flat" data-id="' . $c('tv')    . '">TV</button>';
-		$r .=   '<button class="btn-flat" data-id="' . $c('hdmi1') . '">HDMI 1</button>';
-		$r .=   '<button class="btn-flat" data-id="' . $c('hdmi2') . '">HDMI 2</button>';
-		$r .= '</div>';
+// Touches KEY_ non fonctionnelles
+//		$r .= '<div class="row" style="gap:8px;">';
+//		$r .=   '<button class="btn-flat" data-id="' . $c('tv')    . '">TV</button>';
+//		$r .=   '<button class="btn-flat" data-id="' . $c('hdmi1') . '">HDMI 1</button>';
+//		$r .=   '<button class="btn-flat" data-id="' . $c('hdmi2') . '">HDMI 2</button>';
+//		$r .= '</div>';
 
 		$r .= '<div class="samsung-logo">SAMSUNG</div>';
 		$r .= '</div>'; // #jt-remote
