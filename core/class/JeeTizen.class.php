@@ -492,10 +492,12 @@ class JeeTizen extends eqLogic {
 		$r .= '</div>'; // #jt-remote
 
 		// ── Widget compact dashboard ──────────────────────────────────────────
+		$savedW = $this->getDisplay('width', '116px');
+		$savedH = $this->getDisplay('height', '120px');
 		$html  = '<div class="eqLogic eqLogic-widget allowResize multimedia" '
 			. 'data-eqtype="JeeTizen" data-eqlogic_id="' . $eqId . '" '
 			. 'data-eqlogic_uid="' . $uid . '" data-version="' . $_version . '" '
-			. 'data-category="multimedia" style="margin:4px;padding:0;height:120px;width:116px;">';
+			. 'data-category="multimedia" style="margin:4px;padding:0;height:' . $savedH . ';width:' . $savedW . ';">';
 		$html .= '<center class="widget-name">'
 			. '<a href="' . $eqLink . '" style="font-size:1.1em;">' . htmlspecialchars($name) . '</a>'
 			. '</center>';
