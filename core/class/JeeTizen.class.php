@@ -508,15 +508,13 @@ class JeeTizen extends eqLogic {
 		$html .= '<img class="jt-tv-img-' . $eqId . '" src="plugins/JeeTizen/core/template/widget/samsung_tizen.png" '
 			. 'style="max-width:100%;max-height:100%;cursor:pointer;display:block;margin:0 auto;"/>';
 
-		$cssJson = json_encode($css);
 		$eid = (int)$eqId;
+
+		// CSS directement dans le HTML (disponible immédiatement, pas de race condition)
+		$html .= '<style id="' . $styleId . '">' . $css . '</style>';
 
 		$html .= '<script>'
 			. '(function(){'
-			// CSS : supprimer ancien style de cet eqId, injecter le nouveau
-			. 'document.querySelectorAll("style[id^=\'jt-style-' . $eid . '-\']").forEach(function(e){e.remove();});'
-			. 'var s=document.createElement("style");s.id="' . $styleId . '";'
-			. 's.textContent=' . $cssJson . ';document.head.appendChild(s);'
 
 			// Modale jQuery UI
 			. 'var $m=$("#md_modal_jt_' . $eid . '");'
