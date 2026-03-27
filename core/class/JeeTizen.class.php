@@ -523,13 +523,18 @@ class JeeTizen extends eqLogic {
 			.   'width:'.(int)round(280*$ratio+40).',resizable:false,'
 			.   'position:{my:"center",at:"center",of:window},'
 			.   'open:function(){'
+			.     'var self=this;'
+			// Petit délai pour laisser le navigateur calculer le layout de la modale
+			.     'setTimeout(function(){'
 			// Appliquer le scale zoom sur #jt-remote uniquement a l ouverture de la modale
-			.     'document.getElementById("jt-remote-' . $eid . '").style.zoom="' . $scale . '%";'
+			.       'var rm=document.getElementById("jt-remote-' . $eid . '");'
+			.       'if(rm)rm.style.zoom="' . $scale . '%";'
 			// Forcer overflow:visible + fond transparent sur la chaine jQuery UI
-			.     '$(this).css({overflow:"visible",padding:"0",background:"transparent",border:"none"});'
-			.     '$(this).closest(".ui-dialog").find("*").css("overflow","visible");'
-			.     '$(this).closest(".ui-dialog").css({background:"transparent",border:"none",boxShadow:"none"});'
-			.     'jtPad' . $eid . '();'
+			.       '$(self).css({overflow:"visible",padding:"0",background:"transparent",border:"none"});'
+			.       '$(self).closest(".ui-dialog").find("*").css("overflow","visible");'
+			.       '$(self).closest(".ui-dialog").css({background:"transparent",border:"none",boxShadow:"none"});'
+			.       'jtPad' . $eid . '();'
+			.     '},50);'
 			.   '}'
 			. '});'
 
@@ -555,9 +560,12 @@ class JeeTizen extends eqLogic {
 			// Init canvas pad
 			. 'function jtPad' . $eid . '(){'
 			.   'var wrap=document.querySelector("#jt-remote-' . $eid . ' .pad-wrap");'
-			.   'if(!wrap||wrap._ji)return;wrap._ji=true;'
+			.   'if(!wrap)return;'
 			.   'var cv=wrap.querySelector(".pad-canvas");'
 			.   'var ctx=cv.getContext("2d");'
+			// N'attacher le listener click qu'une seule fois
+			.   'if(!cv._jtClick){'
+			.   'cv._jtClick=true;'
 			.   'cv.addEventListener("click",function(e){'
 			.     'var r=cv.getBoundingClientRect();'
 			.     'var sx=cv.width/r.width,sy=cv.height/r.height;'
@@ -577,6 +585,7 @@ class JeeTizen extends eqLogic {
 			.     'setTimeout(function(){ctx.clearRect(0,0,210,210);},200);'
 			.     'if(cid&&cid!="")jeedom.cmd.execute({id:cid});'
 			.   '});'
+			.   '}' // fin if !cv._jtClick
 			. '}'
 			. '})();</script>';
 
