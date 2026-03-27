@@ -1,76 +1,107 @@
 <style>
+    
 .jt-#eqId# .remote {
-    background: #1a1a1a; padding: 20px; border-radius: 40px; width: 100%;
-    display: flex; flex-direction: column; align-items: center; gap: 16px;
-    box-shadow: 0 0 30px rgba(0,0,0,0.9); border: 1px solid #333;
-    box-sizing: border-box;
-}
-.jt-#eqId# .row { display: flex; width: 100%; justify-content: center; gap: 12px; align-items: center; }
-.jt-#eqId# .pad-container {
-    position: relative; width: 180px; height: 180px; border-radius: 50%;
-    background: #222; overflow: hidden; box-shadow: inset 0 0 20px #000;
-}
+        background: #1a1a1a; padding: 30px; border-radius: 50px; width: 320px;
+        display: flex; flex-direction: column; align-items: center; gap: 20px;
+        box-shadow: 0 0 50px rgba(0,0,0,0.9); border: 1px solid #333;
+    }
+
+.jt-#eqId# .row { display: flex; width: 100%; justify-content: center; gap: 15px; align-items: center; }
+
+    /* --- PAD EN PARTS DE PIZZA (VRAI SECTEURS) --- */
+.jt-#eqId# .pad-container { 
+        position: relative; 
+        width: 240px; 
+        height: 240px; 
+        border-radius: 50%; 
+        background: #222; 
+        overflow: hidden;
+        box-shadow: inset 0 0 20px #000;
+    }
+
 .jt-#eqId# .arrow-btn {
-    position: absolute; width: 100%; height: 100%; top: 0; left: 0;
-    background: transparent; border: none; cursor: pointer; z-index: 2; padding: 0;
-    transition: background 0.1s;
-}
+        position: absolute; 
+        width: 100%; 
+        height: 100%; 
+        top: 0; 
+        left: 0;
+        background: transparent; 
+        border: none; 
+        cursor: pointer; 
+        z-index: 2;
+        padding: 0;
+        transition: background 0.1s;
+    }
+
+    /* Découpage pizza : chaque bouton occupe un quart du cercle complet */
 .jt-#eqId# .up    { clip-path: polygon(50% 50%, 0% 0%, 100% 0%); }
 .jt-#eqId# .down  { clip-path: polygon(50% 50%, 0% 100%, 100% 100%); }
 .jt-#eqId# .left  { clip-path: polygon(50% 50%, 0% 0%, 0% 100%); }
 .jt-#eqId# .right { clip-path: polygon(50% 50%, 100% 0%, 100% 100%); }
+
 .jt-#eqId# .arrow-btn:active { background: rgba(255, 255, 255, 0.1); }
-.jt-#eqId# .arrow-btn svg { width: 36px; height: 36px; fill: #666; position: absolute; pointer-events: none; }
-.jt-#eqId# .up svg    { top: 14px; left: 50%; transform: translateX(-50%); }
-.jt-#eqId# .down svg  { bottom: 14px; left: 50%; transform: translateX(-50%); }
-.jt-#eqId# .left svg  { left: 14px; top: 50%; transform: translateY(-50%); }
-.jt-#eqId# .right svg { right: 14px; top: 50%; transform: translateY(-50%); }
+
+.jt-#eqId# .arrow-btn svg { width: 50px; height: 50px; fill: #666; position: absolute; pointer-events: none; }
+.jt-#eqId# .up svg    { top: 20px; left: 50%; transform: translateX(-50%); }
+.jt-#eqId# .down svg  { bottom: 20px; left: 50%; transform: translateX(-50%); }
+.jt-#eqId# .left svg  { left: 20px; top: 50%; transform: translateY(-50%); }
+.jt-#eqId# .right svg { right: 20px; top: 50%; transform: translateY(-50%); }
+
+    /* BOUTON OK (SURPLOMBE LA PIZZA) */
 .jt-#eqId# .ok {
-    position: absolute; top: 50%; left: 50%; width: 70px; height: 70px;
-    transform: translate(-50%, -50%); border-radius: 50%;
-    background: radial-gradient(circle, #444, #222); border: 1px solid #555;
-    color: white; font-weight: bold; font-size: 20px; z-index: 10; cursor: pointer;
-    display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-}
+        position: absolute; 
+        top: 50%; 
+        left: 50%; 
+        width: 95px; 
+        height: 95px;
+        transform: translate(-50%, -50%);
+        border-radius: 50%; 
+        background: radial-gradient(circle, #444, #222); 
+        border: 1px solid #555; 
+        color: white; 
+        font-weight: bold; 
+        font-size: 24px; 
+        z-index: 10; 
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    /* --- TOUCHES VOL / CH (PLEINE LARGEUR + INVERSION BAS) --- */
 .jt-#eqId# .btn-vert {
-    background: #333; border: 1px solid #444; color: #ffffff; border-radius: 12px;
-    width: 70px; height: 70px; cursor: pointer; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; padding: 0;
-}
-.jt-#eqId# .btn-vert b { font-size: 22px; width: 100%; text-align: center; display: block; }
-.jt-#eqId# .btn-vert span { font-size: 12px; width: 100%; text-align: center; display: block; font-weight: bold; }
+        background: #333; border: 1px solid #444; color: #ffffff; border-radius: 15px;
+        width: 100px; height: 100px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 0;
+    }
+.jt-#eqId# .btn-vert b { font-size: 28px; width: 100%; text-align: center; display: block; }
+.jt-#eqId# .btn-vert span { font-size: 16px; width: 100%; text-align: center; display: block; font-weight: bold; }
+
+    /* --- RECTANGLES (RETOUR / HOME) --- */
 .jt-#eqId# .btn-rect {
-    background: #333; border: 1px solid #444; color: white; border-radius: 10px;
-    height: 50px; flex: 1; font-weight: bold; cursor: pointer; display: flex;
-    flex-direction: column; align-items: center; justify-content: center;
-}
-.jt-#eqId# .btn-rect svg { width: 90%; height: 22px; margin-bottom: 2px; }
-.jt-#eqId# .btn-rect span { font-size: 11px; width: 100%; text-align: center; }
-.jt-#eqId# .btn-power {
-    width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer;
-    background: radial-gradient(circle at 35% 35%, #ff3333 0%, #aa0000 50%, #660000 100%);
-    display: flex; justify-content: center; align-items: center; flex-shrink: 0;
-}
-.jt-#eqId# .btn-power svg { width: 30px; height: 30px; stroke: white; fill: none; }
-.jt-#eqId# .btn-source {
-    width: 90px; height: 38px; border-radius: 10px; background: #333; border: 1px solid #444;
-    color: white; font-weight: bold; display: flex; align-items: center; justify-content: center;
-    gap: 6px; cursor: pointer; font-size: 11px;
-}
-.jt-#eqId# .btn-mute {
-    width: 55px; height: 55px; border-radius: 50%; background: #2a2a2a;
-    border: 1px solid #444; cursor: pointer; display: flex; justify-content: center; align-items: center;
-}
-.jt-#eqId# .btn-mute svg { width: 60%; height: 60%; fill: white; }
+        background: #333; border: 1px solid #444; color: white; border-radius: 12px;
+        height: 65px; flex: 1; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+.jt-#eqId# .btn-rect svg { width: 90%; height: 30px; margin-bottom: 2px; }
+.jt-#eqId# .btn-rect span { font-size: 14px; width: 100%; text-align: center; }
+
+    /* --- TOP BAR --- */
+.jt-#eqId# .btn-power { width: 75px; height: 75px; border-radius: 50%; border: none; cursor: pointer; background: radial-gradient(circle at 35% 35%, #ff3333 0%, #aa0000 50%, #660000 100%); display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+.jt-#eqId# .btn-power svg { width: 45px; height: 45px; stroke: white; fill: none; }
+.jt-#eqId# .btn-source { width: 110px; height: 50px; border-radius: 10px; background: #333; border: 1px solid #444; color: white; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+
+.jt-#eqId# .btn-mute { width: 80px; height: 80px; border-radius: 50%; background: #2a2a2a; border: 1px solid #444; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+.jt-#eqId# .btn-mute svg { width: 75%; height: 75%; fill: white; }
+
 .jt-#eqId# button:active { filter: brightness(1.4); }
-.jt-#eqId# .jt-led { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.jt-#eqId# .samsung-logo { margin-top: 15px; font-size: 26px; font-weight: 900; color: #333; letter-spacing: 4px; }
 </style>
 
 <div class="jt-#eqId#">
-<div class="remote">
-    <div class="jt-led" style="background:#ledColor#"></div>
+  <div class="jt-led" style="width:8px;height:8px;border-radius:50%;background:#ledColor#;margin:4px auto"></div>
 
+<div class="remote">
     <div class="row" style="justify-content: space-between;">
         <button class="btn-power" data-id="#cmd_on_off#"><svg viewBox="0 0 24 24"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.77 0" stroke-width="2.5" stroke-linecap="round"/></svg></button>
         <button class="btn-source" data-id="#cmd_source#"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M11 12h7M15 9l3 3-3 3"/></svg> SOURCE</button>
@@ -85,16 +116,23 @@
     </div>
 
     <div class="row">
-        <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; flex-direction:column; gap:12px;">
             <button class="btn-vert" data-id="#cmd_vol_up#"><b>+</b><span>VOL</span></button>
             <button class="btn-vert" data-id="#cmd_vol_down#"><span>VOL</span><b>-</b></button>
         </div>
         <button class="btn-mute" data-id="#cmd_mute#">
-            <svg viewBox="0 0 24 24"><path d="M5 9v6h4l5 5V4l-5 5H5z"/><line x1="4" y1="4" x2="20" y2="20" stroke="white" stroke-width="2"/></svg>
-        </button>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-            <button class="btn-vert" data-id="#cmd_ch_up#"><b>&#9650;</b><span>CH</span></button>
-            <button class="btn-vert" data-id="#cmd_ch_down#"><span>CH</span><b>&#9660;</b></button>
+		<svg viewBox="0 0 24 24">
+                <path d="M5 9v6h4l5 5V4l-5 5H5z"/>
+                <line x1="4" y1="4" x2="20" y2="20" stroke="white" stroke-width="2"/>
+            </svg></button>
+		<!--  
+		<svg viewBox="0 0 24 24">
+		<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM4.3 3L3 4.3l4.7 4.7H3v6h4l5 5V4L9.3 6.7 4.3 3z"/>
+		</svg></button>
+        -->
+		<div style="display:flex; flex-direction:column; gap:12px;">
+            <button class="btn-vert" data-id="#cmd_ch_up#"><b>▲</b><span>CH</span></button>
+            <button class="btn-vert" data-id="#cmd_ch_down#"><span>CH</span><b>▼</b></button>
         </div>
     </div>
 
@@ -103,28 +141,17 @@
         <button class="btn-rect" data-id="#cmd_home#"><svg viewBox="0 0 24 24" fill="white"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>HOME</span></button>
     </div>
 
-    <div class="row" style="gap: 8px;">
-        <button class="btn-rect" style="height:40px;" data-id="#cmd_tv#">TV</button>
-        <button class="btn-rect" style="height:40px;" data-id="#cmd_hdmi1#">HDMI 1</button>
-        <button class="btn-rect" style="height:40px;" data-id="#cmd_hdmi2#">HDMI 2</button>
+    <div class="row" style="gap: 10px;">
+        <button class="btn-rect" style="height:50px;" data-id="#cmd_tv#">TV</button>
+        <button class="btn-rect" style="height:50px;" data-id="#cmd_hdmi1#">HDMI 1</button>
+        <button class="btn-rect" style="height:50px;" data-id="#cmd_hdmi2#">HDMI 2</button>
     </div>
-</div>
+    <div class="samsung-logo">SAMSUNG</div>
 </div>
 
 <script>
-(function(){
-    var w = document.querySelector('.jt-#eqId#');
-    if (!w) return;
-    w.querySelectorAll('button[data-id]').forEach(function(btn) {
-        var id = btn.getAttribute('data-id');
-        if (id && id !== '') {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                jeedom.cmd.execute({id: id});
-            });
-        } else {
-            btn.style.display = 'none';
-        }
+    document.querySelectorAll('.jt-#eqId# button[data-id]').forEach(btn => {
+        btn.onclick = (e) => { e.stopPropagation(); var cid=btn.getAttribute('data-id');if(cid&&cid!=='')jeedom.cmd.execute({id:cid}); };
     });
-})();
 </script>
+</div>

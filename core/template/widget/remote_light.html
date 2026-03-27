@@ -1,74 +1,115 @@
 <style>
+    /* 1. ARRIÈRE PLAN BLANC */
+    /*background: #ffffff; */
+		background: #6a6c6c;
+        color: #333; 
+        font-family: Arial, sans-serif; 
+        display: flex; 
+        justify-content: center; 
+        padding: 20px; 
+    }
+    
+    /* 2. BOITIER IVOIRE */
 .jt-#eqId# .remote {
-    background: #fdfaf0; padding: 20px; border-radius: 40px; width: 100%;
-    display: flex; flex-direction: column; align-items: center; gap: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #efe6d5;
-    box-sizing: border-box;
-}
-.jt-#eqId# .row { display: flex; width: 100%; justify-content: center; gap: 12px; align-items: center; }
-.jt-#eqId# .pad-container {
-    position: relative; width: 180px; height: 180px; border-radius: 50%;
-    background: #e6dfcc; overflow: hidden; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
-}
+        background: #fdfaf0; 
+        padding: 30px; 
+        border-radius: 50px; 
+        width: 320px;
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        gap: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+        border: 1px solid #efe6d5;
+    }
+
+.jt-#eqId# .row { display: flex; width: 100%; justify-content: center; gap: 15px; align-items: center; }
+
+    /* --- PAD EN PARTS DE PIZZA (IVOIRE FONCÉ) --- */
+.jt-#eqId# .pad-container { 
+        position: relative; 
+        width: 240px; 
+        height: 240px; 
+        border-radius: 50%; 
+        background: #e6dfcc; /* Ivoire foncé */
+        overflow: hidden;
+        box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+    }
+
 .jt-#eqId# .arrow-btn {
-    position: absolute; width: 100%; height: 100%; top: 0; left: 0;
-    background: transparent; border: none; cursor: pointer; z-index: 2; padding: 0;
-    transition: background 0.1s;
-}
+        position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+        background: transparent; border: none; cursor: pointer; z-index: 2;
+    }
 .jt-#eqId# .up    { clip-path: polygon(50% 50%, 0% 0%, 100% 0%); }
 .jt-#eqId# .down  { clip-path: polygon(50% 50%, 0% 100%, 100% 100%); }
 .jt-#eqId# .left  { clip-path: polygon(50% 50%, 0% 0%, 0% 100%); }
 .jt-#eqId# .right { clip-path: polygon(50% 50%, 100% 0%, 100% 100%); }
+
 .jt-#eqId# .arrow-btn:active { background: rgba(0, 0, 0, 0.05); }
-.jt-#eqId# .arrow-btn svg { width: 36px; height: 36px; fill: #554; position: absolute; pointer-events: none; }
-.jt-#eqId# .up svg    { top: 14px; left: 50%; transform: translateX(-50%); }
-.jt-#eqId# .down svg  { bottom: 14px; left: 50%; transform: translateX(-50%); }
-.jt-#eqId# .left svg  { left: 14px; top: 50%; transform: translateY(-50%); }
-.jt-#eqId# .right svg { right: 14px; top: 50%; transform: translateY(-50%); }
+.jt-#eqId# .arrow-btn svg { width: 50px; height: 50px; fill: #554; position: absolute; pointer-events: none; }
+.jt-#eqId# .up svg    { top: 20px; left: 50%; transform: translateX(-50%); }
+.jt-#eqId# .down svg  { bottom: 20px; left: 50%; transform: translateX(-50%); }
+.jt-#eqId# .left svg  { left: 20px; top: 50%; transform: translateY(-50%); }
+.jt-#eqId# .right svg { right: 20px; top: 50%; transform: translateY(-50%); }
+
+    /* OK central assorti au boîtier */
 .jt-#eqId# .ok {
-    position: absolute; top: 50%; left: 50%; width: 70px; height: 70px;
-    transform: translate(-50%, -50%); border-radius: 50%;
-    background: #fdfaf0; border: 1px solid #dcd3bc; color: #444;
-    font-weight: bold; font-size: 20px; z-index: 10; cursor: pointer;
-    display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-}
-.jt-#eqId# .btn-vert, .jt-#eqId# .btn-rect, .jt-#eqId# .btn-source, .jt-#eqId# .btn-mute {
-    background: #e6dfcc; border: 1px solid #dcd3bc; color: #444; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-.jt-#eqId# .btn-vert {
-    border-radius: 12px; width: 70px; height: 70px; flex-direction: column; padding: 0;
-}
-.jt-#eqId# .btn-vert b { font-size: 22px; width: 100%; text-align: center; display: block; }
-.jt-#eqId# .btn-vert span { font-size: 12px; width: 100%; text-align: center; display: block; font-weight: bold; }
-.jt-#eqId# .btn-rect {
-    border-radius: 10px; height: 50px; flex: 1; font-weight: bold; flex-direction: column; padding: 4px;
-}
-.jt-#eqId# .btn-rect svg { width: 90%; height: 22px; margin-bottom: 2px; fill: #444; }
-.jt-#eqId# .btn-rect span { font-size: 11px; width: 100%; text-align: center; }
-.jt-#eqId# .btn-power {
-    width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer;
-    background: radial-gradient(circle at 35% 35%, #ff5c5c 0%, #d90000 50%, #b30000 100%);
-    display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 4px 10px rgba(217, 0, 0, 0.2);
-}
-.jt-#eqId# .btn-power svg { width: 30px; height: 30px; stroke: white; fill: none; }
-.jt-#eqId# .btn-source {
-    width: 90px; height: 38px; border-radius: 10px; font-weight: bold; gap: 6px; font-size: 11px;
-}
+        position: absolute; top: 50%; left: 50%; width: 95px; height: 95px;
+        transform: translate(-50%, -50%); border-radius: 50%;
+        background: #fdfaf0; border: 1px solid #dcd3bc; color: #444; 
+        font-weight: bold; font-size: 24px; z-index: 10; cursor: pointer;
+        display: flex; justify-content: center; align-items: center;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+
+    /* 3. TOUS LES BOUTONS EN IVOIRE FONCÉ */
+.jt-#eqId# .btn-vert, .btn-rect, .btn-source, .btn-mute {
+        background: #e6dfcc; 
+        border: 1px solid #dcd3bc; 
+        color: #444; 
+        cursor: pointer; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+.jt-#eqId# .btn-vert { border-radius: 15px; width: 100px; height: 100px; flex-direction: column; }
+.jt-#eqId# .btn-vert b { font-size: 28px; width: 100%; text-align: center; }
+.jt-#eqId# .btn-vert span { font-size: 16px; width: 100%; text-align: center; font-weight: bold; }
+
+.jt-#eqId# .btn-rect { border-radius: 12px; height: 65px; flex: 1; font-weight: bold; flex-direction: column; }
+.jt-#eqId# .btn-rect svg { width: 90%; height: 30px; margin-bottom: 2px; fill: #444; }
+.jt-#eqId# .btn-rect span { font-size: 14px; width: 100%; text-align: center; }
+
+    /* --- POWER --- */
+.jt-#eqId# .btn-power { 
+        width: 75px; height: 75px; border-radius: 50%; border: none; cursor: pointer; 
+        background: radial-gradient(circle at 35% 35%, #ff5c5c 0%, #d90000 50%, #b30000 100%); 
+        display: flex; justify-content: center; align-items: center;
+        box-shadow: 0 4px 10px rgba(217, 0, 0, 0.2);
+    }
+.jt-#eqId# .btn-power svg { width: 45px; height: 45px; stroke: white; fill: none; }
+
+.jt-#eqId# .btn-source { width: 110px; height: 50px; border-radius: 10px; font-weight: bold; gap: 8px; }
 .jt-#eqId# .btn-source svg { stroke: #444; }
-.jt-#eqId# .btn-mute { width: 55px; height: 55px; border-radius: 50%; }
-.jt-#eqId# .btn-mute svg { width: 60%; height: 60%; fill: #444; }
-.jt-#eqId# button:active { transform: scale(0.97); filter: brightness(0.9); }
-.jt-#eqId# .jt-led { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+
+.jt-#eqId# .btn-mute { width: 80px; height: 80px; border-radius: 50%; }
+.jt-#eqId# .btn-mute svg { width: 75%; height: 75%; fill: #444; }
+
+    /* Animation au clic */
+.jt-#eqId# button:active { 
+        transform: scale(0.97);
+        filter: brightness(0.9);
+    }
+    
+.jt-#eqId# .samsung-logo { margin-top: 15px; font-size: 26px; font-weight: 900; color: #dcd3bc; letter-spacing: 4px; }
 </style>
 
 <div class="jt-#eqId#">
-<div class="remote">
-    <div class="jt-led" style="background:#ledColor#"></div>
+  <div class="jt-led" style="width:8px;height:8px;border-radius:50%;background:#ledColor#;margin:4px auto"></div>
 
+<div class="remote">
     <div class="row" style="justify-content: space-between;">
         <button class="btn-power" data-id="#cmd_on_off#"><svg viewBox="0 0 24 24"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.77 0" stroke-width="2.5" stroke-linecap="round"/></svg></button>
         <button class="btn-source" data-id="#cmd_source#">
@@ -85,16 +126,16 @@
     </div>
 
     <div class="row">
-        <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; flex-direction:column; gap:12px;">
             <button class="btn-vert" data-id="#cmd_vol_up#"><b>+</b><span>VOL</span></button>
             <button class="btn-vert" data-id="#cmd_vol_down#"><span>VOL</span><b>-</b></button>
         </div>
         <button class="btn-mute" data-id="#cmd_mute#">
             <svg viewBox="0 0 24 24"><path d="M5 9v6h4l5 5V4l-5 5H5z"/><line x1="4" y1="4" x2="20" y2="20" stroke="#444" stroke-width="2"/></svg>
         </button>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-            <button class="btn-vert" data-id="#cmd_ch_up#"><b>&#9650;</b><span>CH</span></button>
-            <button class="btn-vert" data-id="#cmd_ch_down#"><span>CH</span><b>&#9660;</b></button>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <button class="btn-vert" data-id="#cmd_ch_up#"><b>▲</b><span>CH</span></button>
+            <button class="btn-vert" data-id="#cmd_ch_down#"><span>CH</span><b>▼</b></button>
         </div>
     </div>
 
@@ -103,28 +144,17 @@
         <button class="btn-rect" data-id="#cmd_home#"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>HOME</span></button>
     </div>
 
-    <div class="row" style="gap: 8px;">
-        <button class="btn-rect" style="height:40px;" data-id="#cmd_tv#">TV</button>
-        <button class="btn-rect" style="height:40px;" data-id="#cmd_hdmi1#">HDMI 1</button>
-        <button class="btn-rect" style="height:40px;" data-id="#cmd_hdmi2#">HDMI 2</button>
+    <div class="row" style="gap: 10px;">
+        <button class="btn-rect" style="height:50px;" data-id="#cmd_tv#">TV</button>
+        <button class="btn-rect" style="height:50px;" data-id="#cmd_hdmi1#">HDMI 1</button>
+        <button class="btn-rect" style="height:50px;" data-id="#cmd_hdmi2#">HDMI 2</button>
     </div>
-</div>
+    <div class="samsung-logo">SAMSUNG</div>
 </div>
 
 <script>
-(function(){
-    var w = document.querySelector('.jt-#eqId#');
-    if (!w) return;
-    w.querySelectorAll('button[data-id]').forEach(function(btn) {
-        var id = btn.getAttribute('data-id');
-        if (id && id !== '') {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                jeedom.cmd.execute({id: id});
-            });
-        } else {
-            btn.style.display = 'none';
-        }
+    document.querySelectorAll('.jt-#eqId# button[data-id]').forEach(btn => {
+        btn.onclick = (e) => { e.stopPropagation(); var cid=btn.getAttribute('data-id');if(cid&&cid!=='')jeedom.cmd.execute({id:cid}); };
     });
-})();
 </script>
+</div>

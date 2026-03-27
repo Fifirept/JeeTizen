@@ -323,7 +323,7 @@ class JeeTizen extends eqLogic {
 		$eqLink = 'index.php?v=d&p=JeeTizen&m=JeeTizen&id=' . $eqId;
 		$uid = 'eqLogic' . $eqId . '__' . mt_rand() . '__';
 
-		$width = $this->getDisplay('width', '280px');
+		$width = $this->getDisplay('width', '385px');
 		$height = $this->getDisplay('height', 'auto');
 
 		$html = '<div class="eqLogic eqLogic-widget allowResize" '
