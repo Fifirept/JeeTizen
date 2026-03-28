@@ -104,7 +104,7 @@ class ConnectorImpl_Tizen_Modeles_Standard implements IConnector
             }
 
         } catch (\WebSocket\ConnectionException $e) {
-            Logger::error('WebSocket ConnectionException', $e->getMessage());
+            // Pas de log : cas normal quand la TV est éteinte, le WOL prendra le relais
             return new CommunicationStatus(false, null, 'WebSocket error', $e->getMessage());
         } catch (\Exception $e) {
             Logger::error('WebSocket Exception', $e->getMessage());
